@@ -73,10 +73,10 @@ function renderFooter() {
     }
   }
   if (footerElem) {
+    const currentYear = new Date().getFullYear();
     footerElem.innerHTML = `
-      <div class="footer-content">
-        <p>⚡ Powered by <strong style="color:#1E3A8A; font-weight:700;">Harbinger Group</strong> 🏢 | Jankalyan Blood Bank System (QF/JKRP/18)</p>
-      </div>
+      <div>Copyright ©${currentYear} <span class="highlight-text">Jankalyan Blood centre</span> All rights reserved.</div>
+      <div style="margin-top: 4px;">Powered by <span class="highlight-text">Harbinger Group</span></div>
     `;
   }
 }
