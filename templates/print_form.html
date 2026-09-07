@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>A4 Printable Blood Donor Form - {{ record.record_number }}</title>
+  <link rel="stylesheet" href="/css/print.css">
+  <style>
+    .print-actions-bar {
+      padding: 12px 24px;
+      background: #0F172A;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-print-trigger {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="print-actions-bar no-print">
+    <div>
+      <strong>Record No: {{ record.record_number }}</strong> | Status: {{ record.status }}
+    </div>
+    <div>
+      <button class="btn-print-trigger" onclick="window.print()">🖨️ Print A4 Form / Save PDF</button>
+      <button class="btn-print-trigger" style="background:#475569;" onclick="window.close()">Close</button>
+    </div>
+  </div>
+
+  <div class="print-container">
+    <!-- PAGE 1: DEMOGRAPHICS & MEDICAL EXAM -->
+    <div class="print-page">
+      <table class="print-header-table">
+        <tr>
+          <td width="15%" style="text-align:center;">🩸</td>
+          <td width="70%">
+            <div class="print-title">JANKALYAN BLOOD CENTRE (जनकल्याण रक्तकेंद्र)</div>
+            <div class="print-subtitle">BLOOD DONOR REGISTRATION AND MEDICAL EXAMINATION FORM (रक्तदाता नोंदणी व वैद्यकीय तपासणी)</div>
+          </td>
+          <td width="15%">
+            <div class="form-code">QF/JKRP/18<br>Page 1/4</div>
+          </td>
+        </tr>
+      </table>
+
+      <div class="print-section-header">1. DONOR DEMOGRAPHICS (रक्तदाता माहिती)</div>
+      <table class="print-table">
+        <tr>
+          <td><strong>Record Number:</strong> {{ record.record_number }}</td>
+          <td><strong>Donor ID:</strong> {{ record.donor_number or 'N/A' }}</td>
+          <td><strong>Date of Donation:</strong> {{ record.donation_date }}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Full Name (नाव):</strong> {{ donor.full_name }}</td>
+          <td><strong>Gender:</strong> {{ donor.gender }}</td>
+        </tr>
+        <tr>
+          <td><strong>Age:</strong> {{ donor.age }} yrs</td>
+          <td><strong>DOB:</strong> {{ donor.date_of_birth or 'N/A' }}</td>
+          <td><strong>Mobile:</strong> {{ donor.mobile_number }}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Address (पत्ता):</strong> {{ donor.residential_address }}, {{ donor.city_district }} - {{ donor.pincode }}</td>
+          <td><strong>Email:</strong> {{ donor.email or 'N/A' }}</td>
+        </tr>
+        <tr>
+          <td><strong>Known Blood Group:</strong> <strong style="font-size:11pt; color:#991B1B;">{{ donor.blood_group_known or 'Unknown' }}</strong></td>
+          <td><strong>Donation Type:</strong> {{ donor.donation_type }}</td>
+          <td><strong>Past Donations:</strong> {{ donor.number_of_past_donations or 0 }}</td>
+        </tr>
+      </table>
+
+      <div class="print-section-header">2. MEDICAL EXAMINATION (वैद्यकीय तपासणी)</div>
+      <table class="print-table">
+        <tr>
+          <td><strong>Weight:</strong> {{ medical_exam.weight_kg }} kg</td>
+          <td><strong>Height:</strong> {{ medical_exam.height_cm or 'N/A' }} cm</td>
+          <td><strong>Pulse:</strong> {{ medical_exam.pulse_rate }} bpm</td>
+          <td><strong>BP:</strong> {{ medical_exam.bp_systolic }}/{{ medical_exam.bp_diastolic }} mmHg</td>
+        </tr>
+        <tr>
+          <td><strong>Hemoglobin:</strong> {{ medical_exam.hemoglobin_g_dl }} g/dL</td>
+          <td><strong>Temp:</strong> {{ medical_exam.body_temperature }} °F</td>
+          <td colspan="2"><strong>Venepuncture Site:</strong> {{ medical_exam.skin_site_inspection }}</td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <strong>Screening Decision:</strong>
+            <span style="font-weight:bold; font-size:10pt;">{{ medical_exam.screening_outcome }}</span>
+          </td>
+          <td colspan="2">
+            <strong>Deferral Reason/Duration:</strong> {{ medical_exam.deferral_reason or 'None' }} ({{ medical_exam.deferral_duration or '-' }})
+          </td>
+        </tr>
+      </table>
+
+      <div class="print-section-header">5. BLOOD BAG COLLECTION DETAILS (रक्त संकलन तपशील)</div>
+      <table class="print-table">
+        <tr>
+          <td><strong>Blood Bag Barcode:</strong> {{ donation.blood_bag_number }}</td>
+          <td><strong>Bag Type:</strong> {{ donation.bag_type }}</td>
+          <td><strong>Anticoagulant:</strong> {{ donation.anticoagulant }}</td>
+          <td><strong>Volume:</strong> {{ donation.volume_ml }} mL</td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Phlebotomy Site:</strong> {{ donation.phlebotomy_site }}</td>
+          <td colspan="2"><strong>Phlebotomist Staff:</strong> {{ donation.phlebotomist_staff_id }}</td>
+        </tr>
+        <tr>
+          <td colspan="4"><strong>Adverse Reaction:</strong> {{ donation.adverse_reaction }} {{ donation.reaction_details or '' }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- PAGE 2: MEDICATION & QUESTIONNAIRE HISTORY -->
+    <div class="print-page" style="margin-top:15px;">
+      <table class="print-header-table">
+        <tr>
+          <td width="85%"><strong>JANKALYAN BLOOD CENTRE - MEDICATION & MEDICAL HISTORY QUESTIONNAIRE</strong></td>
+          <td width="15%" class="form-code">QF/JKRP/18<br>Page 2 & 3</td>
+        </tr>
+      </table>
+
+      <div class="print-section-header">3. MEDICATION & DISEASE QUESTIONNAIRE (औषधे व आजार इतिहास)</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Timeframe</th>
+            <th>Question Description (English & Marathi)</th>
+            <th>Response</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Daily (2 months)</td>
+            <td>Medicines for thyroid disorders (थायरॉईडच्या कमतरतेसाठी औषधे)</td>
+            <td><strong>{{ medication_history.get('med_daily_thyroid', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 3 days</td>
+            <td>Aspirin or Salicylates (ॲस्पिरिन किंवा सॅलिसिलेट्स)</td>
+            <td><strong>{{ medication_history.get('med_3days_aspirin', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 7 days</td>
+            <td>Antifungals (eg. Ketoconazole) or Anthelmintics (eg. Mebendazole)</td>
+            <td><strong>{{ medication_history.get('med_7days_antifungals', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 2 Weeks</td>
+            <td>Antibiotics, steroids, measles/mumps/chickenpox, vaccines</td>
+            <td><strong>{{ medication_history.get('med_2weeks_antibiotics', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 28 days</td>
+            <td>Vaccines (Hep A, Typhoid, Swine flu, COVID-19 live), Anti-tetanus serum</td>
+            <td><strong>{{ medication_history.get('med_28days_vaccines', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 1 month</td>
+            <td>Acne treatment (Isotretinoin) or Prostate treatment (Finasteride)</td>
+            <td><strong>{{ medication_history.get('med_1month_acne_prostate', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 3 months</td>
+            <td>Treatment for malaria or Minor Surgery (मलेरिया / किरकोळ शस्त्रक्रिया)</td>
+            <td><strong>{{ medication_history.get('med_3months_malaria', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 6 months</td>
+            <td>Radioactive injection, Dutasteride, Hair transplant / PRP, Dengue/Chikungunya</td>
+            <td><strong>{{ medication_history.get('med_6months_radioactive', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 1 Year</td>
+            <td>Anti-rabies, Jaundice/Hep A/E, Tattoo/piercing, Transfusion/major surgery</td>
+            <td><strong>{{ medication_history.get('med_1year_rabies_tattoo', 'No') }}</strong></td>
+          </tr>
+          <tr>
+            <td>Last 2 years</td>
+            <td>Tuberculosis (क्षयरोग) or Osteomyelitis (हाडांचा संसर्ग)</td>
+            <td><strong>{{ medication_history.get('med_2years_tb', 'No') }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="print-section-header">13. PERMANENT DEFERRAL CHECKLIST (कायमस्वरूपी स्थगिती)</div>
+      <div style="border:1px solid #000; padding:6px; font-size:8pt;">
+        Selected Permanent Conditions:
+        {% if permanent_deferrals %}
+          <strong>{{ permanent_deferrals | join(', ') }}</strong>
+        {% else %}
+          <em>None Checked (कोणतीही नोंद नाही)</em>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- PAGE 3: DONOR CONSENT & MO SIGNATURE -->
+    <div class="print-page" style="margin-top:15px;">
+      <table class="print-header-table">
+        <tr>
+          <td width="85%"><strong>JANKALYAN BLOOD CENTRE - DONOR CONSENT & MEDICAL VERIFICATION</strong></td>
+          <td width="15%" class="form-code">QF/JKRP/18<br>Page 4/4</td>
+        </tr>
+      </table>
+
+      <div class="print-section-header">15. SYMPTOMS & SPECIAL QUESTIONS</div>
+      <table class="print-table">
+        <tr>
+          <td>Night Sweats, Fever, Swollen Glands, Weight Loss: <strong>{{ questionnaire_answers.get('symptoms_fever_sweats', 'No') }}</strong></td>
+          <td>For Females (Abortion/Pregnant/Menstruating): <strong>{{ questionnaire_answers.get('female_pregnant', 'No') }}</strong></td>
+        </tr>
+      </table>
+
+      <div class="donor-consent-block">
+        <div style="font-weight:bold; font-size:10pt; margin-bottom:4px;">DONOR CONSENT (मान्यतापत्र)</div>
+        <p>1) I understand blood donation is voluntary and no remuneration was offered.</p>
+        <p>2) I give consent to utilize my plasma/components for patients or other blood storage centres.</p>
+        <p>3) I have read and answered all questions truthfully.</p>
+        <p>4) I consent to testing of my blood for HIV, Hepatitis B/C, Syphilis, and Malaria.</p>
+        <div style="margin-top:8px; text-align:right;">
+          <div style="display:inline-block; border-bottom:1px solid #000; width:150px; text-align:center;">
+            {% if consent.donor_signature_data %}
+              <img src="{{ consent.donor_signature_data }}" class="printed-signature-img" alt="Donor Signature">
+            {% else %}
+              <em>Signed Digitally</em>
+            {% endif %}
+          </div>
+          <br><strong>Signature of Donor (रक्तदात्याची स्वाक्षरी)</strong>
+        </div>
+      </div>
+
+      <div class="print-section-header">6. MEDICAL OFFICER VERIFICATION & ELECTRONIC SIGNATURE</div>
+      <table class="print-table">
+        <tr>
+          <td width="60%">
+            <strong>Clinical Remarks / Notes:</strong><br>
+            {{ signature.medical_notes or 'Donor screened and found eligible for blood donation.' }}
+            <br><br>
+            <strong>Status:</strong> {{ record.status }}<br>
+            <strong>Verified Date & Time:</strong> {{ signature.signed_at or record.updated_at }}
+          </td>
+          <td width="40%" style="text-align:center; vertical-align:bottom;">
+            {% if signature.signature_data %}
+              <img src="{{ signature.signature_data }}" class="printed-signature-img" alt="Medical Officer Signature">
+            {% else %}
+              <div style="height:40px;"></div>
+            {% endif %}
+            <br>
+            <strong>{{ signature.user_name or 'Medical Officer' }}</strong><br>
+            <small>Medical Officer Electronic Signature</small>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
