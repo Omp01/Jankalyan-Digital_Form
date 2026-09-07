@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Users - Jankalyan Blood Bank Digital Form System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/form.css">
+</head>
+<body>
+  <div class="app-container">
+    <header id="appHeader"></header>
+
+    <div class="card">
+      <div class="card-title">
+        <span>👥 User Management (ADMIN ONLY)</span>
+      </div>
+
+      <form id="createUserForm" onsubmit="handleCreateUser(event)" style="background:#F8FAFC; padding:16px; border-radius:8px; border:1px solid #CBD5E1; margin-bottom:20px;">
+        <h4 style="margin-bottom:12px;">+ Create New System User</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Username *</label>
+            <input type="text" id="newUsername" class="form-control" required placeholder="e.g. dr_patil">
+          </div>
+          <div class="form-group">
+            <label>Password *</label>
+            <input type="password" id="newPassword" class="form-control" required placeholder="Password">
+          </div>
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="newFullName" class="form-control" required placeholder="Dr. Prakash Patil">
+          </div>
+          <div class="form-group">
+            <label>Role *</label>
+            <select id="newRole" class="form-control" required>
+              <option value="STAFF">Blood Bank Staff</option>
+              <option value="MEDICAL_OFFICER">Medical Officer</option>
+              <option value="ADMIN">Administrator</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Medical Reg. No (for MO)</label>
+            <input type="text" id="newRegNo" class="form-control" placeholder="MMC Reg No">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create User ➕</button>
+      </form>
+
+      <h4 style="margin-bottom:12px;">Existing System Users</h4>
+      <div style="overflow-x: auto;">
+        <table class="table-questionnaire">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Full Name</th>
+              <th>Role</th>
+              <th>Medical Reg No</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="6" class="text-center">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/language.js"></script>
+  <script src="/js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkAuth();
+      if (currentUser.role !== 'ADMIN') {
+        alert('Access denied. Admin role required.');
+        window.location.href = '/dashboard.html';
+        return;
+      }
+      loadUsers();
+    });
+
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        if (data.success) {
+          const tbody = document.getElementById('usersTableBody');
+          tbody.innerHTML = data.users.map(u => `
+            <tr>
+              <td>${u.id}</td>
+              <td><strong>${u.username}</strong></td>
+              <td>${u.full_name}</td>
+              <td><span class="badge badge-submitted">${u.role}</span></td>
+              <td>${u.medical_reg_no || '-'}</td>
+              <td>${u.created_at}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleCreateUser(e) {
+      e.preventDefault();
+      const username = document.getElementById('newUsername').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      const full_name = document.getElementById('newFullName').value.trim();
+      const role = document.getElementById('newRole').value;
+      const medical_reg_no = document.getElementById('newRegNo').value.trim();
+
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, full_name, role, medical_reg_no })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          document.getElementById('createUserForm').reset();
+          loadUsers();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Failed to create user', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

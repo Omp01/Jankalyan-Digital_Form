@@ -1,0 +1,43 @@
+# Virtual Environments
+myvenv/
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# SQLite Database Files (Keep schema.sql and db_init.py tracked)
+database/*.db
+*.sqlite
+*.sqlite3
+
+# Generated Excel Exports & Output Files
+BloodBank_Records_*.xlsx
+*.xlsx
+*.csv
+
+# Logs & Temporary Files
+*.log
+*.tmp
+scratch/
+
+# IDE & OS Files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Antigravity IDE Internal Directories
+.gemini/
+.agents/
