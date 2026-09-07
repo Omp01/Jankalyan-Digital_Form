@@ -15,19 +15,26 @@ def init_db():
         schema_sql = f.read()
     cursor.executescript(schema_sql)
 
+    # Migration check for signature_data column in users table
+    cursor.execute("PRAGMA table_info(users)")
+    cols = [column[1] for column in cursor.fetchall()]
+    if 'signature_data' not in cols:
+        print("Migrating users table: adding signature_data column...")
+        cursor.execute("ALTER TABLE users ADD COLUMN signature_data TEXT")
+
     # Seed Default Users if empty
     cursor.execute("SELECT COUNT(*) FROM users")
     user_count = cursor.fetchone()[0]
     if user_count == 0:
         print("Seeding initial users...")
         users_data = [
-            ('admin', generate_password_hash('Admin@123'), 'System Administrator', 'ADMIN', 'ADMIN-001'),
-            ('staff', generate_password_hash('Staff@123'), 'Blood Bank Staff Person', 'STAFF', 'STF-101'),
-            ('doctor', generate_password_hash('Doctor@123'), 'Dr. Rajesh Sharma (Medical Officer)', 'MEDICAL_OFFICER', 'MMC-2024-88990')
+            ('admin', generate_password_hash('Admin@123'), 'System Administrator', 'ADMIN', 'ADMIN-001', None),
+            ('staff', generate_password_hash('Staff@123'), 'Blood Bank Staff Person', 'STAFF', 'STF-101', None),
+            ('doctor', generate_password_hash('Doctor@123'), 'Dr. Rajesh Sharma (Medical Officer)', 'MEDICAL_OFFICER', 'MMC-2024-88990', None)
         ]
         cursor.executemany("""
-            INSERT INTO users (username, password_hash, full_name, role, medical_reg_no)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO users (username, password_hash, full_name, role, medical_reg_no, signature_data)
+            VALUES (?, ?, ?, ?, ?, ?)
         """, users_data)
 
     # Seed System Settings if empty

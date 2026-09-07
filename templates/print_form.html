@@ -38,9 +38,10 @@
     <div>
       <strong>Record No: {{ record.record_number }}</strong> | Status: <span style="text-transform:uppercase; font-weight:bold;">{{ record.status }}</span>
     </div>
-    <div>
+    <div style="display:flex; gap:8px;">
       <button class="btn-print-trigger" onclick="window.print()">🖨️ Print A4 Form / Save PDF</button>
-      <button class="btn-print-trigger" style="background:#475569;" onclick="window.close()">Close</button>
+      <button class="btn-print-trigger" style="background:#3B82F6;" onclick="window.location.href='/records.html'">📋 Back to Records</button>
+      <button class="btn-print-trigger" style="background:#475569;" onclick="window.location.href='/dashboard.html'">📊 Dashboard</button>
     </div>
   </div>
 

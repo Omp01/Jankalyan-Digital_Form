@@ -56,6 +56,7 @@ function renderUserHeader() {
         <a href="/users.html" class="nav-link ${window.location.pathname.includes('users') ? 'active' : ''}">👥 <span data-i18n="nav_users">Manage Users</span></a>
         <a href="/audit.html" class="nav-link ${window.location.pathname.includes('audit') ? 'active' : ''}">📋 <span data-i18n="nav_audit">Audit Logs</span></a>
       ` : ''}
+      <a href="/profile.html" class="nav-link ${window.location.pathname.includes('profile') ? 'active' : ''}" style="margin-left: auto;">👤 Profile & Signature</a>
     </nav>
   `;
   applyTranslations();

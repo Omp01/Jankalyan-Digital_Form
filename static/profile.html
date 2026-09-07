@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile & Digital Signature - Jankalyan Blood Bank</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/form.css">
+</head>
+<body>
+  <div class="app-container">
+    <header id="appHeader"></header>
+
+    <div class="card">
+      <div class="card-title">
+        <span>👤 User Profile & Pre-stored Digital Signature</span>
+      </div>
+
+      <div class="form-grid" style="margin-bottom:24px;">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="profFullName" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="profUsername" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <input type="text" id="profRole" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>Medical Reg No (for Medical Officer)</label>
+          <input type="text" id="profRegNo" class="form-control" readonly>
+        </div>
+      </div>
+
+      <div class="card-title" style="margin-top:16px;">
+        <span>✒️ Pre-stored Digital Signature for Record Verification</span>
+      </div>
+
+      <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">
+        As a Medical Officer or Staff user, you can save your digital signature here. When verifying and finalising blood donor records, you can choose to auto-populate this pre-saved signature instantly instead of drawing it every time!
+      </p>
+
+      <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+        <!-- Left: Current Saved Signature -->
+        <div style="flex:1; min-width:280px; background:#F8FAFC; padding:16px; border-radius:8px; border:1px solid #CBD5E1;">
+          <h4 style="margin-bottom:10px; color:#1E3A8A;">Current Stored Signature</h4>
+          <div id="savedSignaturePreview" style="min-height:120px; display:flex; align-items:center; justify-content:center; background:white; border:1px dashed #94A3B8; border-radius:6px; padding:10px;">
+            <span class="text-muted">No signature pre-stored. Use canvas on right to save one.</span>
+          </div>
+        </div>
+
+        <!-- Right: Signature Canvas to Draw/Upload -->
+        <div style="flex:1; min-width:320px;">
+          <h4 style="margin-bottom:10px; color:#1E3A8A;">Draw / Upload New Signature</h4>
+          <div class="signature-box">
+            <canvas id="profileSignatureCanvas" style="height:160px; background:#FFFFFF; width:100%; touch-action:none; border:1px solid #CBD5E1; border-radius:6px; cursor:crosshair;"></canvas>
+            <div style="display:flex; gap:8px; justify-content:center; margin-top:10px;">
+              <button type="button" class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="clearProfileCanvas()">Clear Canvas</button>
+              <button type="button" class="btn btn-success" style="padding:6px 14px; font-size:0.85rem;" onclick="saveProfileSignature()">💾 Save Digital Signature to Profile</button>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Or Upload Image (PNG/JPG):</label>
+            <input type="file" id="sigUploadInput" accept="image/*" class="form-control" onchange="handleSignatureFileUpload(event)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/language.js"></script>
+  <script src="/js/common.js"></script>
+  <script>
+    let pCanvas = null;
+    let pCtx = null;
+    let pIsDrawing = false;
+    let pHasDrawing = false;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkAuth();
+      loadProfileData();
+      initProfileCanvas();
+    });
+
+    async function loadProfileData() {
+      try {
+        const res = await fetch('/api/profile');
+        const data = await res.json();
+        if (data.success) {
+          const p = data.profile;
+          document.getElementById('profFullName').value = p.full_name || '';
+          document.getElementById('profUsername').value = p.username || '';
+          document.getElementById('profRole').value = p.role || '';
+          document.getElementById('profRegNo').value = p.medical_reg_no || 'N/A';
+
+          const previewDiv = document.getElementById('savedSignaturePreview');
+          if (p.signature_data) {
+            previewDiv.innerHTML = `<img src="${p.signature_data}" style="max-height:100px; max-width:100%; object-fit:contain;" alt="Saved Profile Signature">`;
+          } else {
+            previewDiv.innerHTML = `<span class="text-muted">No pre-stored signature found. Draw or upload below to save.</span>`;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function initProfileCanvas() {
+      pCanvas = document.getElementById('profileSignatureCanvas');
+      if (!pCanvas) return;
+      pCtx = pCanvas.getContext('2d');
+      resizeProfileCanvas();
+
+      pCanvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        pIsDrawing = true;
+        const pos = getPos(e);
+        pCtx.beginPath();
+        pCtx.moveTo(pos.x, pos.y);
+      });
+
+      pCanvas.addEventListener('pointermove', (e) => {
+        if (!pIsDrawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        pCtx.lineTo(pos.x, pos.y);
+        pCtx.stroke();
+        pHasDrawing = true;
+      });
+
+      pCanvas.addEventListener('pointerup', () => { pIsDrawing = false; });
+      pCanvas.addEventListener('pointercancel', () => { pIsDrawing = false; });
+    }
+
+    function resizeProfileCanvas() {
+      if (!pCanvas) return;
+      const rect = pCanvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      pCanvas.width = rect.width * dpr;
+      pCanvas.height = rect.height * dpr;
+      pCtx.scale(dpr, dpr);
+      pCtx.strokeStyle = '#0F172A';
+      pCtx.lineWidth = 2.5;
+      pCtx.lineCap = 'round';
+      pCtx.lineJoin = 'round';
+    }
+
+    function getPos(evt) {
+      const rect = pCanvas.getBoundingClientRect();
+      return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+    }
+
+    function clearProfileCanvas() {
+      if (!pCanvas || !pCtx) return;
+      const rect = pCanvas.getBoundingClientRect();
+      pCtx.clearRect(0, 0, rect.width, rect.height);
+      pHasDrawing = false;
+    }
+
+    async function saveProfileSignature(sigDataUrl = null) {
+      const dataUrl = sigDataUrl || (pHasDrawing ? pCanvas.toDataURL('image/png') : null);
+      if (!dataUrl) {
+        showToast('Please draw or upload a signature before saving.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/profile/signature', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ signature_data: dataUrl })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          loadProfileData();
+          clearProfileCanvas();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function handleSignatureFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        saveProfileSignature(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>

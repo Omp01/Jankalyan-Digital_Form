@@ -117,8 +117,8 @@
         if (data.success) {
           const recs = data.records;
           document.getElementById('statTotal').innerText = recs.length;
-          document.getElementById('statPending').innerText = recs.filter(r => r.status === 'MEDICAL_VERIFICATION' || r.status === 'SUBMITTED').length;
-          document.getElementById('statSigned').innerText = recs.filter(r => r.status === 'SIGNED' || r.status === 'COMPLETED').length;
+          document.getElementById('statPending').innerText = recs.filter(r => ['DRAFT', 'SUBMITTED', 'MEDICAL_VERIFICATION'].includes((r.status || '').toUpperCase())).length;
+          document.getElementById('statSigned').innerText = recs.filter(r => ['SIGNED', 'COMPLETED'].includes((r.status || '').toUpperCase())).length;
 
           const todayStr = new Date().toISOString().split('T')[0];
           document.getElementById('statToday').innerText = recs.filter(r => r.donation_date === todayStr).length;

@@ -76,15 +76,39 @@ def api_logout():
 def api_me():
     if 'user_id' not in session:
         return jsonify({'logged_in': False})
+    
+    user = query_db("SELECT id, username, full_name, role, medical_reg_no, signature_data FROM users WHERE id = ?", (session.get('user_id'),), one=True)
     return jsonify({
         'logged_in': True,
-        'user': {
+        'user': dict(user) if user else {
             'id': session.get('user_id'),
             'username': session.get('username'),
             'full_name': session.get('full_name'),
             'role': session.get('role')
         }
     })
+
+@app.route('/api/profile', methods=['GET'])
+@login_required
+def get_profile():
+    user_id = session.get('user_id')
+    user = query_db("SELECT id, username, full_name, role, medical_reg_no, signature_data FROM users WHERE id = ?", (user_id,), one=True)
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+    return jsonify({'success': True, 'profile': dict(user)})
+
+@app.route('/api/profile/signature', methods=['POST'])
+@login_required
+def update_profile_signature():
+    data = request.get_json() or {}
+    signature_data = data.get('signature_data', '').strip()
+    if not signature_data:
+        return jsonify({'success': False, 'message': 'Signature data is required'}), 400
+
+    user_id = session.get('user_id')
+    execute_db("UPDATE users SET signature_data = ? WHERE id = ?", (signature_data, user_id))
+    log_audit('PROFILE_SIGNATURE_UPDATED', details=f"User {session.get('username')} updated profile signature")
+    return jsonify({'success': True, 'message': 'Digital signature saved to profile successfully.'})
 
 # ==================== USER MANAGEMENT APIs (ADMIN ONLY) ====================
 @app.route('/api/users', methods=['GET'])
