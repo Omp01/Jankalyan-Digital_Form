@@ -1,0 +1,199 @@
+/* Jankalyaan Blood Bank System - Continuous Flow A4 Print & Screen Stylesheet (QF/JKRP/18) */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  background-color: #E2E8F0;
+  color: #0F172A;
+  font-size: 9.5pt;
+  line-height: 1.25;
+}
+
+.print-actions-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 12px 24px;
+  background: #0F172A;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-print-trigger {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.btn-print-trigger:hover {
+  background: #047857;
+}
+
+.print-container {
+  width: 100%;
+  max-width: 210mm;
+  margin: 16px auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Continuous Form Page */
+.print-page.continuous-form {
+  background: white;
+  width: 210mm;
+  padding: 10mm 12mm;
+  margin: 0 auto;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  border-radius: 2px;
+}
+
+/* Header Table */
+.print-header-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+  border: 1.5px solid #1E3A8A;
+}
+
+.print-header-table td {
+  padding: 6px;
+  vertical-align: middle;
+  border: 1px solid #1E3A8A;
+}
+
+.print-title {
+  text-align: center;
+  font-size: 12pt;
+  font-weight: 800;
+  color: #1E3A8A;
+  letter-spacing: -0.2px;
+}
+
+.print-subtitle {
+  text-align: center;
+  font-size: 8.5pt;
+  color: #334155;
+  font-weight: bold;
+  margin-top: 1px;
+}
+
+.form-code {
+  font-size: 8pt;
+  text-align: center;
+  font-weight: bold;
+  color: #1E3A8A;
+}
+
+/* Section Titles */
+.print-section-header {
+  background: #1E3A8A !important;
+  color: white !important;
+  font-weight: bold;
+  font-size: 9pt;
+  padding: 4px 8px;
+  margin-top: 8px;
+  margin-bottom: 3px;
+  border-radius: 2px;
+  letter-spacing: 0.2px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Form Tables */
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6px;
+}
+
+.print-table td, .print-table th {
+  border: 1px solid #64748B;
+  padding: 4px 6px;
+  font-size: 8.5pt;
+  vertical-align: top;
+}
+
+.print-table th {
+  background: #F1F5F9 !important;
+  color: #0F172A;
+  font-weight: bold;
+  text-align: left;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.printed-signature-img {
+  max-height: 45px;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+.donor-consent-block {
+  border: 1px solid #64748B;
+  padding: 6px 8px;
+  margin-top: 6px;
+  background: #F8FAFC;
+  font-size: 8.5pt;
+}
+
+.donor-consent-block p {
+  margin-bottom: 2px;
+}
+
+/* Print Specific Rules */
+@page {
+  size: A4 portrait;
+  margin: 6mm 8mm;
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 9pt;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-container {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .print-page.continuous-form {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .print-section-header {
+    background: #1E3A8A !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-table th {
+    background: #F1F5F9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
