@@ -120,8 +120,16 @@
           document.getElementById('statPending').innerText = recs.filter(r => ['DRAFT', 'SUBMITTED', 'MEDICAL_VERIFICATION'].includes((r.status || '').toUpperCase())).length;
           document.getElementById('statSigned').innerText = recs.filter(r => ['SIGNED', 'COMPLETED'].includes((r.status || '').toUpperCase())).length;
 
-          const todayStr = new Date().toISOString().split('T')[0];
-          document.getElementById('statToday').innerText = recs.filter(r => r.donation_date === todayStr).length;
+          const today = new Date();
+          const dd = String(today.getDate()).padStart(2, '0');
+          const mm = String(today.getMonth() + 1).padStart(2, '0');
+          const yyyy = today.getFullYear();
+          const todayDisplay = `${dd}-${mm}-${yyyy}`;
+          const todayISO = `${yyyy}-${mm}-${dd}`;
+          document.getElementById('statToday').innerText = recs.filter(r => {
+            const formatted = formatDate(r.donation_date);
+            return formatted === todayDisplay || r.donation_date === todayISO;
+          }).length;
         }
       } catch (err) {
         console.error(err);

@@ -2,6 +2,23 @@ import io
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
+def format_date_ddmmyyyy(val):
+    if not val:
+        return ''
+    val = str(val).strip()
+    if not val:
+        return ''
+    if ' ' in val or 'T' in val:
+        parts = val.replace('T', ' ').split(' ')
+        dp = parts[0].split('-')
+        if len(dp) == 3 and len(dp[0]) == 4:
+            return f"{dp[2]}-{dp[1]}-{dp[0]} {parts[1]}"
+        return val
+    dp = val.split('-')
+    if len(dp) == 3 and len(dp[0]) == 4:
+        return f"{dp[2]}-{dp[1]}-{dp[0]}"
+    return val
+
 def generate_records_excel(records):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -37,7 +54,7 @@ def generate_records_excel(records):
         bp_val = f"{r.get('bp_systolic', '')}/{r.get('bp_diastolic', '')}" if r.get('bp_systolic') else ""
         row_data = [
             r.get('record_number', ''),
-            r.get('donation_date', ''),
+            format_date_ddmmyyyy(r.get('donation_date', '')),
             r.get('full_name', ''),
             r.get('gender', ''),
             r.get('age', ''),

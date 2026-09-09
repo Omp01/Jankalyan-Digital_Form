@@ -285,9 +285,9 @@ async function loadRecordData(recordId) {
     if (donor) {
       document.getElementById('recNumDisplay').innerText = record.record_number;
       if (document.getElementById('donor_number')) document.getElementById('donor_number').value = donor.donor_number || '';
-      if (document.getElementById('donation_date')) document.getElementById('donation_date').value = record.donation_date || '';
+      if (document.getElementById('donation_date')) document.getElementById('donation_date').value = formatDateForInput(record.donation_date) || '';
       if (document.getElementById('full_name')) document.getElementById('full_name').value = donor.full_name || '';
-      if (document.getElementById('date_of_birth')) document.getElementById('date_of_birth').value = donor.date_of_birth || '';
+      if (document.getElementById('date_of_birth')) document.getElementById('date_of_birth').value = formatDateForInput(donor.date_of_birth) || '';
       if (document.getElementById('age')) document.getElementById('age').value = donor.age || 18;
       if (document.getElementById('occupation')) document.getElementById('occupation').value = donor.occupation || '';
       if (document.getElementById('organization_company')) document.getElementById('organization_company').value = donor.organization_company || '';
@@ -345,6 +345,7 @@ function renderReviewSummary() {
   container.innerHTML = `
     <div class="review-box">
       <h3>📋 ${data.donor.full_name} (${data.donor.gender}, ${data.donor.age} yrs)</h3>
+      <p><strong>Donation Date:</strong> ${formatDate(data.donor.donation_date)} | <strong>DOB:</strong> ${formatDate(data.donor.date_of_birth) || 'N/A'}</p>
       <p><strong>Mobile:</strong> ${data.donor.mobile_number} | <strong>City:</strong> ${data.donor.city_district}</p>
       <p><strong>Blood Group:</strong> ${data.donor.blood_group_known} | <strong>Donation Type:</strong> ${data.donor.donation_type}</p>
       <hr>

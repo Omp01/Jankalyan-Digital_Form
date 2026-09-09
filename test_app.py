@@ -95,5 +95,11 @@ class BloodBankSystemTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.mimetype, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
+    def test_05_print_record(self):
+        self.client.post('/api/auth/login', json={'username': 'staff', 'password': 'Staff@123'})
+        res = self.client.get('/print/1')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'JANKALYAN BLOOD CENTRE', res.data)
+
 if __name__ == '__main__':
     unittest.main()

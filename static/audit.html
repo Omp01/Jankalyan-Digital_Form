@@ -75,7 +75,7 @@
           const tbody = document.getElementById('auditTableBody');
           tbody.innerHTML = data.logs.map(l => `
             <tr>
-              <td>${l.timestamp}</td>
+              <td>${formatDate(l.timestamp)}</td>
               <td><strong>${l.username}</strong></td>
               <td><span class="badge badge-submitted">${l.action}</span></td>
               <td>${l.record_number || '-'}</td>

@@ -15,6 +15,47 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = 'blood_bank_super_secret_session_key_hospital_2026'
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(hours=12)
 
+def to_db_date(val):
+    """Converts DD-MM-YYYY or YYYY-MM-DD to YYYY-MM-DD for DB storage."""
+    if not val:
+        return None
+    val = str(val).strip()
+    if not val:
+        return None
+    parts = val.split('-')
+    if len(parts) == 3:
+        if len(parts[0]) == 2 and len(parts[2]) == 4: # DD-MM-YYYY
+            return f"{parts[2]}-{parts[1]}-{parts[0]}"
+        elif len(parts[0]) == 4 and len(parts[2]) == 2: # YYYY-MM-DD
+            return val
+    return val
+
+def to_display_date(val):
+    """Converts YYYY-MM-DD or ISO datetime to DD-MM-YYYY [HH:MM:SS]."""
+    if not val:
+        return ''
+    val = str(val).strip()
+    if not val or val == 'N/A' or val == 'None':
+        return val
+    if ' ' in val or 'T' in val:
+        parts = val.replace('T', ' ').split(' ')
+        d_part = parts[0]
+        t_part = ' '.join(parts[1:])
+        dp = d_part.split('-')
+        if len(dp) == 3 and len(dp[0]) == 4: # YYYY-MM-DD
+            return f"{dp[2]}-{dp[1]}-{dp[0]} {t_part}".strip()
+        elif len(dp) == 3 and len(dp[0]) == 2: # DD-MM-YYYY
+            return val
+        return val
+    dp = val.split('-')
+    if len(dp) == 3 and len(dp[0]) == 4: # YYYY-MM-DD
+        return f"{dp[2]}-{dp[1]}-{dp[0]}"
+    return val
+
+@app.template_filter('format_date')
+def jinja_format_date(val):
+    return to_display_date(val)
+
 @app.teardown_appcontext
 def teardown_db(exception):
     close_db(exception)
@@ -115,7 +156,12 @@ def update_profile_signature():
 @roles_required(['ADMIN'])
 def get_users():
     users = query_db("SELECT id, username, full_name, role, medical_reg_no, created_at FROM users ORDER BY id DESC")
-    return jsonify({'success': True, 'users': [dict(u) for u in users]})
+    out = []
+    for u in users:
+        u_dict = dict(u)
+        u_dict['created_at'] = to_display_date(u_dict.get('created_at'))
+        out.append(u_dict)
+    return jsonify({'success': True, 'users': out})
 
 @app.route('/api/users', methods=['POST'])
 @roles_required(['ADMIN'])
@@ -186,15 +232,21 @@ def get_records():
 
     if from_date:
         query += " AND r.donation_date >= ?"
-        params.append(from_date)
+        params.append(to_db_date(from_date))
 
     if to_date:
         query += " AND r.donation_date <= ?"
-        params.append(to_date)
+        params.append(to_db_date(to_date))
 
     query += " ORDER BY r.id DESC"
     records = query_db(query, params)
-    return jsonify({'success': True, 'records': [dict(r) for r in records]})
+    out = []
+    for r in records:
+        r_dict = dict(r)
+        r_dict['donation_date'] = to_display_date(r_dict.get('donation_date'))
+        r_dict['created_at'] = to_display_date(r_dict.get('created_at'))
+        out.append(r_dict)
+    return jsonify({'success': True, 'records': out})
 
 @app.route('/api/records/<int:record_id>', methods=['GET'])
 @login_required
@@ -212,17 +264,32 @@ def get_record(record_id):
     donation = query_db("SELECT * FROM donation_details WHERE record_id = ?", (record_id,), one=True)
     signature = query_db("SELECT * FROM signatures WHERE record_id = ?", (record_id,), one=True)
 
+    rec_dict = dict(rec)
+    rec_dict['donation_date'] = to_display_date(rec_dict.get('donation_date'))
+    rec_dict['created_at'] = to_display_date(rec_dict.get('created_at'))
+    rec_dict['updated_at'] = to_display_date(rec_dict.get('updated_at'))
+
+    donor_dict = dict(donor) if donor else {}
+    if donor_dict.get('date_of_birth'):
+        donor_dict['date_of_birth'] = to_display_date(donor_dict.get('date_of_birth'))
+    if donor_dict.get('last_donation_date'):
+        donor_dict['last_donation_date'] = to_display_date(donor_dict.get('last_donation_date'))
+
+    sig_dict = dict(signature) if signature else {}
+    if sig_dict.get('signed_at'):
+        sig_dict['signed_at'] = to_display_date(sig_dict.get('signed_at'))
+
     return jsonify({
         'success': True,
-        'record': dict(rec),
-        'donor': dict(donor) if donor else {},
+        'record': rec_dict,
+        'donor': donor_dict,
         'medical_exam': dict(med_exam) if med_exam else {},
         'medication_history': json.loads(med_hist['answers_json']) if med_hist else {},
         'permanent_deferrals': json.loads(perm_def['conditions_json']) if perm_def else [],
         'questionnaire_answers': json.loads(quest['answers_json']) if quest else {},
         'consent': dict(consent) if consent else {},
         'donation_details': dict(donation) if donation else {},
-        'signature': dict(signature) if signature else {}
+        'signature': sig_dict
     })
 
 @app.route('/api/records', methods=['POST'])
@@ -250,11 +317,16 @@ def create_or_update_record():
             return jsonify({'success': False, 'message': 'Record is finalized and locked. Editing is not permitted.'}), 403
 
         status = 'DRAFT' if save_as_draft else 'SUBMITTED'
-        execute_db("UPDATE blood_donation_records SET updated_by = ?, updated_at = CURRENT_TIMESTAMP, status = ? WHERE id = ?",
-                   (user_id, status, record_id))
+        donation_date_db = to_db_date(donor.get('donation_date'))
+        if donation_date_db:
+            execute_db("UPDATE blood_donation_records SET updated_by = ?, updated_at = CURRENT_TIMESTAMP, status = ?, donation_date = ? WHERE id = ?",
+                       (user_id, status, donation_date_db, record_id))
+        else:
+            execute_db("UPDATE blood_donation_records SET updated_by = ?, updated_at = CURRENT_TIMESTAMP, status = ? WHERE id = ?",
+                       (user_id, status, record_id))
     else:
         rec_num = generate_record_number()
-        donation_date = donor.get('donation_date') or datetime.date.today().isoformat()
+        donation_date = to_db_date(donor.get('donation_date')) or datetime.date.today().isoformat()
         status = 'DRAFT' if save_as_draft else 'SUBMITTED'
         record_id = execute_db("""
             INSERT INTO blood_donation_records (record_number, donor_number, donation_date, status, created_by)
@@ -264,6 +336,9 @@ def create_or_update_record():
     rec = query_db("SELECT record_number FROM blood_donation_records WHERE id = ?", (record_id,), one=True)
     rec_num = rec['record_number']
 
+    dob_db = to_db_date(donor.get('date_of_birth'))
+    last_don_db = to_db_date(donor.get('last_donation_date'))
+
     execute_db("DELETE FROM donor_details WHERE record_id = ?", (record_id,))
     execute_db("""
         INSERT INTO donor_details (record_id, full_name, gender, date_of_birth, age, occupation, organization_company,
@@ -271,11 +346,11 @@ def create_or_update_record():
                                   donation_type, last_donation_date, number_of_past_donations)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        record_id, donor.get('full_name', ''), donor.get('gender', 'Male'), donor.get('date_of_birth'),
+        record_id, donor.get('full_name', ''), donor.get('gender', 'Male'), dob_db,
         int(donor.get('age', 18)), donor.get('occupation', ''), donor.get('organization_company', ''),
         donor.get('residential_address', ''), donor.get('city_district', ''), donor.get('pincode', ''),
         donor.get('mobile_number', ''), donor.get('email', ''), donor.get('blood_group_known', 'Unknown'),
-        donor.get('donation_type', 'Voluntary'), donor.get('last_donation_date'), int(donor.get('number_of_past_donations', 0))
+        donor.get('donation_type', 'Voluntary'), last_don_db, int(donor.get('number_of_past_donations', 0))
     ))
 
     execute_db("DELETE FROM medical_examinations WHERE record_id = ?", (record_id,))
@@ -461,14 +536,16 @@ def export_excel():
 
     if from_date:
         query += " AND r.donation_date >= ?"
-        params.append(from_date)
+        params.append(to_db_date(from_date))
 
     if to_date:
         query += " AND r.donation_date <= ?"
-        params.append(to_date)
+        params.append(to_db_date(to_date))
 
     query += " ORDER BY r.id DESC"
     records = [dict(r) for r in query_db(query, params)]
+    for r in records:
+        r['donation_date'] = to_display_date(r.get('donation_date'))
 
     excel_file = generate_records_excel(records)
     log_audit('EXCEL_EXPORTED', details=f"Exported {len(records)} records")
@@ -515,7 +592,12 @@ def restore_backup():
 @roles_required(['ADMIN'])
 def get_audit_logs():
     logs = query_db("SELECT * FROM audit_logs ORDER BY id DESC LIMIT 200")
-    return jsonify({'success': True, 'logs': [dict(l) for l in logs]})
+    out = []
+    for l in logs:
+        l_dict = dict(l)
+        l_dict['timestamp'] = to_display_date(l_dict.get('timestamp'))
+        out.append(l_dict)
+    return jsonify({'success': True, 'logs': out})
 
 if __name__ == '__main__':
     print("Starting Jankalyan Blood Bank Digital Form System server on http://localhost:5000 ...")

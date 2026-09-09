@@ -42,7 +42,7 @@ function renderRecordsTable(records) {
     return `
       <tr>
         <td><strong>${r.record_number}</strong></td>
-        <td>${r.donation_date}</td>
+        <td>${formatDate(r.donation_date)}</td>
         <td>${r.full_name || 'N/A'}<br><small class="text-muted">${r.mobile_number || ''}</small></td>
         <td><span class="blood-type-pill">${r.blood_group_known || 'N/A'}</span></td>
         <td>${r.blood_bag_number || 'Pending'}</td>

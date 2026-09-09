@@ -67,7 +67,7 @@
         <tr>
           <td width="33%"><strong>Record Number:</strong> {{ record.record_number }}</td>
           <td width="33%"><strong>Donor ID:</strong> {{ record.donor_number or 'N/A' }}</td>
-          <td width="34%"><strong>Date of Donation:</strong> {{ record.donation_date }}</td>
+          <td width="34%"><strong>Date of Donation:</strong> {{ record.donation_date | format_date }}</td>
         </tr>
         <tr>
           <td colspan="2"><strong>Full Name (नाव):</strong> {{ donor.full_name }}</td>
@@ -75,7 +75,7 @@
         </tr>
         <tr>
           <td><strong>Age:</strong> {{ donor.age }} yrs</td>
-          <td><strong>DOB:</strong> {{ donor.date_of_birth or 'N/A' }}</td>
+          <td><strong>DOB:</strong> {{ donor.date_of_birth | format_date or 'N/A' }}</td>
           <td><strong>Mobile:</strong> {{ donor.mobile_number }}</td>
         </tr>
         <tr>
@@ -243,7 +243,7 @@
             {{ signature.medical_notes or 'Donor screened and found eligible for blood donation.' }}
             <br><br>
             <strong>Final Status:</strong> <span style="font-weight:bold; color:#059669;">{{ record.status }}</span><br>
-            <strong>Verified Date & Time:</strong> {{ signature.signed_at or record.updated_at }}
+            <strong>Verified Date & Time:</strong> {{ (signature.signed_at or record.updated_at) | format_date }}
           </td>
           <td width="35%" style="text-align:center; vertical-align:bottom;">
             {% if signature.signature_data %}

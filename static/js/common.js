@@ -4,6 +4,45 @@
 
 let currentUser = null;
 
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  dateStr = String(dateStr).trim();
+  if (!dateStr || dateStr === 'N/A' || dateStr === 'None') return dateStr;
+
+  if (dateStr.includes('T') || dateStr.includes(' ')) {
+    const parts = dateStr.replace('T', ' ').split(' ');
+    const dPart = parts[0];
+    const tPart = parts.slice(1).join(' ');
+    const dp = dPart.split('-');
+    if (dp.length === 3 && dp[0].length === 4) {
+      return `${dp[2]}-${dp[1]}-${dp[0]} ${tPart}`.trim();
+    }
+    return dateStr;
+  }
+
+  const dp = dateStr.split('-');
+  if (dp.length === 3 && dp[0].length === 4) {
+    return `${dp[2]}-${dp[1]}-${dp[0]}`;
+  }
+  return dateStr;
+}
+
+function formatDateForInput(dateStr) {
+  if (!dateStr) return '';
+  dateStr = String(dateStr).trim();
+  if (dateStr.includes('T') || dateStr.includes(' ')) {
+    dateStr = dateStr.replace('T', ' ').split(' ')[0];
+  }
+  const dp = dateStr.split('-');
+  if (dp.length === 3 && dp[2].length === 4) { // DD-MM-YYYY -> YYYY-MM-DD for <input type="date">
+    return `${dp[2]}-${dp[1]}-${dp[0]}`;
+  }
+  if (dp.length === 3 && dp[0].length === 4) {
+    return dateStr;
+  }
+  return dateStr;
+}
+
 async function checkAuth() {
   try {
     const res = await fetch('/api/auth/me');
