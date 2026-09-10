@@ -523,27 +523,74 @@
       </table>
 
       <!-- ═══════════════════════════════════════════════════════════════════ -->
-      <!-- SECTION 13: DONOR CONSENT (Page 4/4)                               -->
+      <!-- SECTION 13: DONOR CONSENT (मान्यतापत्र - QF/JKRP/18 Page 4/4)        -->
       <!-- ═══════════════════════════════════════════════════════════════════ -->
-      <div class="donor-consent-block" style="margin-top:10px;">
-        <div style="font-weight:bold; font-size:10pt; color:#1E3A8A; margin-bottom:6px; border-bottom:1px solid #CBD5E1; padding-bottom:4px;">
-          DONOR CONSENT (मान्यतापत्र - QF/JKRP/18 Page 4/4)
-        </div>
-        <p style="margin-bottom:4px;">1) <strong>Voluntary Act & Risk Awareness:</strong> I understand that blood donation is voluntary without inducement or remuneration. I am aware of medical screening procedures and voluntarily willing to donate blood. My blood will be tested for Hepatitis B/C, HIV/AIDS, Malaria, and Syphilis.</p>
-        <p style="margin-bottom:4px;">2) <strong>Component Utilization:</strong> I hereby give consent to utilize my plasma component for fractionation and blood/components for patients or other blood storage centres.</p>
-        <p style="margin-bottom:4px;">3) <strong>Truthful Declaration:</strong> I have read and understood all information presented and answered all questions truthfully. Any incorrect statement or concealment may affect my health or harm the recipient.</p>
-        <p style="margin-bottom:4px;">4) <strong>Confidentiality:</strong> I prohibit any information about test results to be disclosed to any individual or government agency without my prior permission.</p>
-        <p style="margin-bottom:6px;">5) <strong>Notification Preference:</strong> Would you like to be informed about any abnormal test result? <strong>{{ 'Yes (होय)' if consent.abnormal_results_notify else 'No (नाही)' }}</strong></p>
+      <div class="section-header">6. DONOR CONSENT / मान्यतापत्र (QF/JKRP/18 Page 4/4)</div>
+      <div class="donor-consent-block" style="border:1px solid #CBD5E1; padding:8px 10px; border-radius:4px; margin-bottom:8px; font-size:8pt; line-height:1.35; background:#FAFAFA;">
         
-        <div style="margin-top:10px; text-align:right;">
-          <div style="display:inline-block; border-bottom:1px solid #000; width:180px; text-align:center; min-height:40px;">
-            {% if consent.donor_signature_data %}
-              <img src="{{ consent.donor_signature_data }}" class="printed-signature-img" alt="Donor Signature">
-            {% else %}
-              <em style="font-size:8.5pt; color:#64748B;">Signed Digitally</em>
-            {% endif %}
+        <!-- Clause 1 -->
+        <div style="margin-bottom:6px;">
+          <p style="margin:0 0 2px 0;"><strong>1) I understand that / मला हे पूर्णपणे समजले आहे की:</strong></p>
+          <div style="margin-left:12px; color:#1E293B;">
+            <p style="margin:0 0 3px 0;"><strong>a)</strong> Blood donation is a totally voluntary act and no inducement or remuneration has been offered.<br>
+            <span style="color:#334155;">रक्तदान हे पूर्णतः स्वच्छेने करायचे आहे व त्यासाठी मला कोणताही मोबदला देऊ केलेला नाही.</span></p>
+            <p style="margin:0 0 3px 0;"><strong>b)</strong> Donation of blood is a medical procedure and generally not associated with any major risks or side effects. However, I am aware that no medical procedure is without risk and I am voluntarily willing to donate blood.<br>
+            <span style="color:#334155;">रक्त / रक्तघटकांचे दान ही एक वैद्यकीय प्रक्रिया आहे, स्वच्छ रक्तदानातून मी या प्रक्रियेमधील संभाव्य धोके स्विकारत आहे. वरील सर्व माहिती वाचून मी ऐच्छिक रक्तदान करतो / करते आहे.</span></p>
+            <p style="margin:0 0 3px 0;"><strong>c)</strong> My blood will be tested for Hepatitis B, Hepatitis C, HIV/AIDS, Malaria and Veneral disease in addition to any other screening test required to ensure blood safety.<br>
+            <span style="color:#334155;">माझ्या रक्तावर कराव्या लागणाऱ्या सर्व प्रकारच्या तपासण्यांची माहिती मला देण्यात आली आहे आणि त्या तपासण्या करण्यास माझी संमती आहे.</span></p>
           </div>
-          <br><strong style="font-size:9pt; color:#0F172A;">Signature of Donor (रक्तदात्याची स्वाक्षरी)</strong>
+        </div>
+
+        <!-- Clause 2 -->
+        <div style="margin-bottom:6px;">
+          <p style="margin:0 0 2px 0;"><strong>2) I hereby give consent to utilize my / माझे रक्त / रक्तघटक:</strong></p>
+          <div style="margin-left:12px; color:#1E293B;">
+            <p style="margin:0 0 3px 0;"><strong>a)</strong> Plasma component for fractionation.<br>
+            <span style="color:#334155;">अ) प्लाझ्मा फ्रॅक्शनेशनसाठी वापरण्यास.</span></p>
+            <p style="margin:0 0 3px 0;"><strong>b)</strong> Blood and blood component for use of patient beyond the blood centre through blood storage centres and other blood centres.<br>
+            <span style="color:#334155;">ब) रक्तपेढीच्या परिक्षेत्राबाहेरील रुग्णांसाठी, रक्तसाठवणूक केंद्रासाठी व अन्य रक्तपेढ्यांमार्फत वापरण्यास मी अनुमती देत आहे.</span></p>
+          </div>
+        </div>
+
+        <!-- Clause 3 -->
+        <div style="margin-bottom:6px;">
+          <p style="margin:0 0 2px 0;"><strong>3) Truthful Declaration / माहितीची खात्री:</strong><br>
+          I have read and understood all the information presented and answered all the questions truthfully. Any incorrect statement or concealment may affect my health or may harm the recipient.<br>
+          <span style="color:#334155;">वरील सर्व माहिती वाचून मला समजली आहे. मी सर्व प्रश्नांची उत्तरे विचारपूर्वक, बरोबर दिली आहेत. चुकीची माहिती देणे अथवा कोणतीही माहिती लपवणे याचा माझ्या व रुग्णाच्या आरोग्यावर परिणाम होऊ शकतो याची मला पूर्ण कल्पना आहे.</span></p>
+        </div>
+
+        <!-- Clause 4 -->
+        <div style="margin-bottom:6px;">
+          <p style="margin:0 0 2px 0;"><strong>4) Confidentiality & Test Disclosure Prohibition / गोपनीयता:</strong><br>
+          I prohibit any information about Hepatitis B, Hepatitis C, HIV/AIDS, Malaria and Veneral diseases testing done on my blood to be disclosed to any individual or Government agency without my prior permission.<br>
+          <span style="color:#334155;">रक्ताच्या सुरक्षिततेसाठी माझ्या रक्तावर एच.आय.व्ही/एड्स, हिपॅटायटीस बी, हिपॅटायटीस सी, सिफिलीस (गुप्तरोग), मलेरीया या तपासण्या केल्या जातील याची कल्पना मला दिली आहे. वरील तपासण्यांचे निदान माझ्या परवानगी शिवाय कोणत्याही व्यक्तीस, संस्थेस किंवा सरकारी यंत्रणेस देण्यात येऊ नये.</span></p>
+        </div>
+
+        <!-- Clause 5 -->
+        <div style="margin-bottom:6px; background:#F1F5F9; padding:6px 10px; border-radius:3px;">
+          <p style="margin:0 0 3px 0;"><strong>5) Notification of Abnormal Test Result / दोषपूर्ण तपासणी निकाल कळविणे:</strong><br>
+          I would like to be informed about any abnormal test result from above mentioned tests.<br>
+          <span style="color:#334155;">या तपासण्यांमधील काही तपासण्या दोषपूर्ण आढळल्यास आपल्याला कळवावे का ? (होय असल्यास आपणाशी सामाजिक कार्यकर्ते किंवा वैद्यकीय अधिकारी संपर्क करतील.)</span><br>
+          <span style="margin-top:3px; display:inline-block;"><strong>Response (निवड):</strong> 
+          {% if consent.abnormal_results_notify %}
+            <span class="badge-yes" style="font-size:8.5pt;">YES / होय</span>
+          {% else %}
+            <span class="badge-no" style="font-size:8.5pt;">NO / नाही</span>
+          {% endif %}
+          </span>
+          </p>
+        </div>
+
+        <!-- Donor Signature -->
+        <div style="margin-top:8px; display:flex; justify-content:flex-end; text-align:center;">
+          <div style="display:inline-block; border-bottom:1px solid #000; width:190px; text-align:center; min-height:42px;">
+            {% if consent.donor_signature_data %}
+              <img src="{{ consent.donor_signature_data }}" class="printed-signature-img" style="max-height:40px;" alt="Donor Signature">
+            {% else %}
+              <em style="font-size:8pt; color:#64748B; display:block; padding-top:12px;">Signed Digitally</em>
+            {% endif %}
+            <div style="font-size:8.5pt; font-weight:bold; color:#0F172A; margin-top:2px;">Signature of Donor<br>(रक्तदात्याची स्वाक्षरी)</div>
+          </div>
         </div>
       </div>
 

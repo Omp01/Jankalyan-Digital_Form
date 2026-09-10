@@ -732,22 +732,43 @@
         <div class="card">
           <div class="card-title" data-i18n="consent_title">Donor Consent Form (मान्यतापत्र)</div>
 
-          <div style="font-size:0.9rem; background:#F8FAFC; padding:16px; border-radius:6px; border:1px solid #CBD5E1; margin-bottom:20px;">
-            <p data-i18n="consent_item1">1) Voluntary donation declaration without inducement.</p>
-            <p data-i18n="consent_item2">2) Consent for plasma component fractionation.</p>
-            <p data-i18n="consent_item3">3) Truthful answers declaration.</p>
-            <p data-i18n="consent_item4">4) Consent for HIV, Hepatitis B/C, Syphilis, Malaria screening.</p>
-            <div style="margin-top:10px;">
-              <input type="checkbox" id="consent_given" checked> <label for="consent_given"><strong>I hereby agree and confirm all consent declarations.</strong></label>
+          <div style="font-size:0.92rem; line-height:1.6; background:#F8FAFC; padding:18px; border-radius:6px; border:1px solid #CBD5E1; margin-bottom:20px;">
+            <div style="font-weight:bold; font-size:1.05rem; color:#1E3A8A; margin-bottom:12px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;" data-i18n="consent_header">Consent / मान्यतापत्र</div>
+            <p style="margin-bottom:12px;" data-i18n="consent_item1">1) I understand that...</p>
+            <p style="margin-bottom:12px;" data-i18n="consent_item2">2) I hereby give consent to utilize my...</p>
+            <p style="margin-bottom:12px;" data-i18n="consent_item3">3) I have read and understood all the information...</p>
+            <p style="margin-bottom:12px;" data-i18n="consent_item4">4) I prohibit any information about...</p>
+            
+            <!-- Question 5: Notification of Abnormal Test Result -->
+            <div style="margin-top:14px; padding:14px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:6px;">
+              <p style="margin-bottom:10px; font-weight:600; color:#1E3A8A;" data-i18n="consent_item5">5) I would like to be informed about any abnormal test result from above mentioned tests.</p>
+              <div style="display:flex; gap:24px; align-items:center;">
+                <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600; color:#0F172A;">
+                  <input type="radio" name="abnormal_results_notify_choice" id="notify_yes" value="Yes" checked onchange="document.getElementById('abnormal_results_notify').value='true'">
+                  <span data-i18n="consent_yes">Yes / होय</span>
+                </label>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600; color:#0F172A;">
+                  <input type="radio" name="abnormal_results_notify_choice" id="notify_no" value="No" onchange="document.getElementById('abnormal_results_notify').value='false'">
+                  <span data-i18n="consent_no">No / नाही</span>
+                </label>
+                <input type="hidden" id="abnormal_results_notify" value="true">
+              </div>
+            </div>
+
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid #E2E8F0;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:#0F172A;">
+                <input type="checkbox" id="consent_given" checked> 
+                <span data-i18n="consent_confirm_checkbox">I hereby agree and confirm all consent declarations.</span>
+              </label>
             </div>
           </div>
 
           <!-- Donor Consent Signature Box -->
           <div class="signature-box" style="margin-bottom:24px;">
-            <label style="display:block; margin-bottom:8px; font-weight:700; color:#1E3A8A;">Donor Consent Signature (रक्तदात्याची स्वाक्षरी - Canvas)</label>
+            <label style="display:block; margin-bottom:8px; font-weight:700; color:#1E3A8A;" data-i18n="consent_donor_sig_label">Donor Consent Signature (रक्तदात्याची स्वाक्षरी - Canvas)</label>
             <canvas id="donorSignatureCanvas" style="height:150px; background:#FFFFFF; width:100%; touch-action:none; border:1px solid #CBD5E1; border-radius:6px; cursor:crosshair;"></canvas>
             <div style="margin-top:8px;">
-              <button type="button" class="btn btn-secondary" style="padding:4px 12px; font-size:0.8rem;" onclick="clearDonorSignature()">Clear Donor Signature</button>
+              <button type="button" class="btn btn-secondary" style="padding:4px 12px; font-size:0.8rem;" onclick="clearDonorSignature()" data-i18n="btn_clear_donor_sig">Clear Donor Signature</button>
             </div>
           </div>
 

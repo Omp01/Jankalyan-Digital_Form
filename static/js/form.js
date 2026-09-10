@@ -237,7 +237,14 @@ function getFormData() {
     questionnaire_answers: quest,
     consent: {
       consent_given: document.getElementById('consent_given')?.checked ?? true,
-      abnormal_results_notify: document.getElementById('abnormal_results_notify')?.checked ?? true,
+      abnormal_results_notify: (() => {
+        const radioYes = document.getElementById('notify_yes');
+        const radioNo = document.getElementById('notify_no');
+        if (radioYes && radioNo) return radioYes.checked;
+        const el = document.getElementById('abnormal_results_notify');
+        if (el) return el.type === 'checkbox' ? el.checked : (el.value === 'true' || el.value === 'Yes');
+        return true;
+      })(),
       donor_signature_data: (() => {
         const dCanvas = document.getElementById('donorSignatureCanvas');
         if (window.hasDonorSignature && dCanvas) {
@@ -388,7 +395,16 @@ async function loadRecordData(recordId) {
 
     if (consent) {
       if (document.getElementById('consent_given')) document.getElementById('consent_given').checked = consent.consent_given !== false;
-      if (document.getElementById('abnormal_results_notify')) document.getElementById('abnormal_results_notify').checked = consent.abnormal_results_notify !== false;
+      const isNotify = consent.abnormal_results_notify !== false && consent.abnormal_results_notify !== 0;
+      if (document.getElementById('notify_yes')) document.getElementById('notify_yes').checked = isNotify;
+      if (document.getElementById('notify_no')) document.getElementById('notify_no').checked = !isNotify;
+      if (document.getElementById('abnormal_results_notify')) {
+        if (document.getElementById('abnormal_results_notify').type === 'checkbox') {
+          document.getElementById('abnormal_results_notify').checked = isNotify;
+        } else {
+          document.getElementById('abnormal_results_notify').value = isNotify ? 'true' : 'false';
+        }
+      }
 
       if (consent.donor_signature_data) {
         window.loadedDonorSignature = consent.donor_signature_data;
