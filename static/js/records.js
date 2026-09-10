@@ -51,7 +51,7 @@ function renderRecordsTable(records) {
           <a href="/print/${r.id}" target="_blank" class="btn-sm btn-print">🖨️ <span data-i18n="btn_print">Print</span></a>
           <a href="/donor_form.html?id=${r.id}" class="btn-sm btn-view">👁️ <span data-i18n="btn_view">View / Edit</span></a>
           ${(currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'MEDICAL_OFFICER') && (r.status === 'SIGNED' || r.status === 'COMPLETED')) ? `
-            <button class="btn-sm btn-unlock" onclick="promptUnlockRecord(${r.id}, '${r.record_number}')">🔓 Unlock</button>
+            <button class="btn-sm btn-unlock" onclick="promptUnlockRecord(${r.id}, '${r.record_number}')">✏️ <span data-i18n="btn_modify">Modify Record</span></button>
           ` : ''}
         </td>
       </tr>

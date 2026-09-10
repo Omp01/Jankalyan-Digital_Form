@@ -154,6 +154,50 @@ body {
   margin-bottom: 2px;
 }
 
+/* Section Headers (new template) */
+.section-header {
+  background: #1E3A8A !important;
+  color: white !important;
+  font-weight: bold;
+  font-size: 9.5pt;
+  padding: 5px 10px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.sub-section-header {
+  background: #E0E7FF !important;
+  color: #1E3A8A !important;
+  font-weight: bold;
+  font-size: 9pt;
+  padding: 3px 8px;
+  margin-top: 6px;
+  margin-bottom: 3px;
+  border-radius: 2px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Response Badges */
+.badge-yes {
+  color: #B91C1C;
+  font-weight: bold;
+  background: #FEE2E2;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 8.5pt;
+}
+
+.badge-no {
+  color: #047857;
+  font-weight: bold;
+  font-size: 8.5pt;
+}
+
 /* Print Specific Rules */
 @page {
   size: A4 portrait;
@@ -184,9 +228,23 @@ body {
     border-radius: 0;
   }
 
-  .print-section-header {
+  .print-section-header, .step-section-title, .section-header {
     background: #1E3A8A !important;
     color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sub-section-header {
+    background: #E0E7FF !important;
+    color: #1E3A8A !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .badge-yes {
+    background: #FEE2E2 !important;
+    color: #B91C1C !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -197,3 +255,4 @@ body {
     print-color-adjust: exact;
   }
 }
+

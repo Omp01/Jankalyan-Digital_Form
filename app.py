@@ -14,6 +14,7 @@ from middleware.auth_decorator import login_required, roles_required
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = 'blood_bank_super_secret_session_key_hospital_2026'
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(hours=12)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 def to_db_date(val):
     """Converts DD-MM-YYYY or YYYY-MM-DD to YYYY-MM-DD for DB storage."""
@@ -89,6 +90,10 @@ def api_login():
         log_audit('LOGIN_FAILED', details=f"Attempted username: {username}")
         return jsonify({'success': False, 'message': 'Invalid username or password'}), 401
 
+    if user['is_active'] == 0:
+        log_audit('LOGIN_BLOCKED', details=f"Deactivated user attempted login: {username}")
+        return jsonify({'success': False, 'message': 'This user account has been deactivated (soft-deleted).'}), 403
+
     session.permanent = True
     session['user_id'] = user['id']
     session['username'] = user['username']
@@ -155,7 +160,7 @@ def update_profile_signature():
 @app.route('/api/users', methods=['GET'])
 @roles_required(['ADMIN'])
 def get_users():
-    users = query_db("SELECT id, username, full_name, role, medical_reg_no, created_at FROM users ORDER BY id DESC")
+    users = query_db("SELECT id, username, full_name, role, medical_reg_no, COALESCE(is_active, 1) as is_active, created_at FROM users ORDER BY id DESC")
     out = []
     for u in users:
         u_dict = dict(u)
@@ -179,18 +184,114 @@ def create_user():
     if role not in ['ADMIN', 'STAFF', 'MEDICAL_OFFICER']:
         return jsonify({'success': False, 'message': 'Invalid role'}), 400
 
-    existing = query_db("SELECT id FROM users WHERE username = ?", (username,), one=True)
+    existing = query_db("SELECT id, COALESCE(is_active, 1) as is_active FROM users WHERE username = ?", (username,), one=True)
     if existing:
-        return jsonify({'success': False, 'message': 'Username already exists'}), 400
+        return jsonify({'success': False, 'message': 'Username already exists in the system'}), 400
 
     pwd_hash = generate_password_hash(password)
     user_id = execute_db("""
-        INSERT INTO users (username, password_hash, full_name, role, medical_reg_no)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO users (username, password_hash, full_name, role, medical_reg_no, is_active)
+        VALUES (?, ?, ?, ?, ?, 1)
     """, (username, pwd_hash, full_name, role, medical_reg_no))
 
     log_audit('USER_CREATED', details=f"Created user {username} with role {role}")
     return jsonify({'success': True, 'user_id': user_id, 'message': 'User created successfully'})
+
+@app.route('/api/users/<int:user_id>', methods=['PUT'])
+@roles_required(['ADMIN'])
+def update_user(user_id):
+    user = query_db("SELECT id, username, full_name, role, medical_reg_no FROM users WHERE id = ?", (user_id,), one=True)
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    data = request.get_json() or {}
+    username = data.get('username', '').strip() or user['username']
+    full_name = data.get('full_name', '').strip() or user['full_name']
+    role = data.get('role', '').strip() or user['role']
+    medical_reg_no = data.get('medical_reg_no', '').strip() if 'medical_reg_no' in data else (user['medical_reg_no'] or '')
+    password = data.get('password', '').strip()
+
+    if not username or not full_name or not role:
+        return jsonify({'success': False, 'message': 'Username, full name, and role are required'}), 400
+
+    if role not in ['ADMIN', 'STAFF', 'MEDICAL_OFFICER']:
+        return jsonify({'success': False, 'message': 'Invalid role'}), 400
+
+    # Prevent demoting primary admin user
+    if user['username'] == 'admin' and role != 'ADMIN':
+        return jsonify({'success': False, 'message': 'Primary Administrator role cannot be demoted'}), 400
+
+    # Check username collision
+    existing = query_db("SELECT id FROM users WHERE username = ? AND id != ?", (username, user_id), one=True)
+    if existing:
+        return jsonify({'success': False, 'message': 'Username is already in use by another user'}), 400
+
+    if password:
+        pwd_hash = generate_password_hash(password)
+        execute_db("""
+            UPDATE users 
+            SET username = ?, full_name = ?, role = ?, medical_reg_no = ?, password_hash = ?
+            WHERE id = ?
+        """, (username, full_name, role, medical_reg_no, pwd_hash, user_id))
+        details = f"Updated user {username} (ID: {user_id}), including password"
+    else:
+        execute_db("""
+            UPDATE users 
+            SET username = ?, full_name = ?, role = ?, medical_reg_no = ?
+            WHERE id = ?
+        """, (username, full_name, role, medical_reg_no, user_id))
+        details = f"Updated user {username} (ID: {user_id})"
+
+    log_audit('USER_UPDATED', details=details)
+    return jsonify({'success': True, 'message': 'User updated successfully'})
+
+@app.route('/api/users/<int:user_id>/password', methods=['POST', 'PUT'])
+@roles_required(['ADMIN'])
+def change_user_password(user_id):
+    user = query_db("SELECT id, username FROM users WHERE id = ?", (user_id,), one=True)
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    data = request.get_json() or {}
+    password = data.get('password', '').strip()
+    if not password:
+        return jsonify({'success': False, 'message': 'Password cannot be empty'}), 400
+
+    pwd_hash = generate_password_hash(password)
+    execute_db("UPDATE users SET password_hash = ? WHERE id = ?", (pwd_hash, user_id))
+    log_audit('USER_PASSWORD_CHANGED', details=f"Changed password for user {user['username']} (ID: {user_id})")
+    return jsonify({'success': True, 'message': f"Password for user '{user['username']}' updated successfully!"})
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@roles_required(['ADMIN'])
+def delete_user(user_id):
+    user = query_db("SELECT id, username, role, COALESCE(is_active, 1) as is_active FROM users WHERE id = ?", (user_id,), one=True)
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    # Protect root admin account
+    if user['username'] == 'admin' or user_id == 1:
+        return jsonify({'success': False, 'message': "Primary Administrator account ('admin') cannot be soft-deleted."}), 400
+
+    # Protect active logged in user from self deletion
+    current_user_id = session.get('user_id')
+    if current_user_id == user_id:
+        return jsonify({'success': False, 'message': "You cannot soft-delete your own active account."}), 400
+
+    execute_db("UPDATE users SET is_active = 0 WHERE id = ?", (user_id,))
+    log_audit('USER_SOFT_DELETED', details=f"Soft-deleted user {user['username']} (ID: {user_id})")
+    return jsonify({'success': True, 'message': f"User '{user['username']}' deactivated (soft-deleted) successfully."})
+
+@app.route('/api/users/<int:user_id>/reactivate', methods=['POST'])
+@roles_required(['ADMIN'])
+def reactivate_user(user_id):
+    user = query_db("SELECT id, username FROM users WHERE id = ?", (user_id,), one=True)
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    execute_db("UPDATE users SET is_active = 1 WHERE id = ?", (user_id,))
+    log_audit('USER_REACTIVATED', details=f"Reactivated user {user['username']} (ID: {user_id})")
+    return jsonify({'success': True, 'message': f"User '{user['username']}' reactivated successfully."})
 
 # ==================== RECORD MANAGEMENT APIs ====================
 @app.route('/api/records', methods=['GET'])

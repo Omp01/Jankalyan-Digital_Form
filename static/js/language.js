@@ -35,13 +35,20 @@ const I18N = {
     btn_view: "View Record",
     btn_edit: "Edit Record",
     btn_unlock: "Unlock Record",
+    btn_modify: "Modify Record",
+    btn_edit_user: "Edit User",
+    btn_change_password: "Change Password",
+    btn_delete_user: "Delete User",
+    badge_protected_admin: "Protected Admin",
+    title_edit_user: "Edit System User Credentials",
+    title_change_password: "Change User Password",
 
     // Step Headers
     step_1: "1. Donor Demographics",
-    step_2: "2. Medical Examination",
-    step_3: "3. Medication & Disease History",
-    step_4: "4. Deferral & Symptoms",
-    step_5: "5. Blood Bag",
+    step_2: "2. Health Questionnaire",
+    step_3: "3. Deferrals & Personal History",
+    step_4: "4. Medical Examination",
+    step_5: "5. Blood Bag Collection",
     step_6: "6. Consent & Verification",
 
     // Step 1 Labels
@@ -88,12 +95,116 @@ const I18N = {
     deferral_reason: "Deferral Reason",
     deferral_duration: "Deferral Duration",
 
+    // Page 1 Questions (1 to 10) & Staff Details
+    q1_age_18_65: "1. Are you within 18-65 years of age?",
+    q2_meals_4h: "2. Have you taken breakfast/meals within the last 4 hours?",
+    q3a_slept_well: "3A. Have you slept well last night ?",
+    q3b_night_shift_sleep: "3B. If you are a night shift worker, have you got undisturbed sleep adequately?",
+    q4_heavy_work_12h: "4. Have you been involved in heavy/strenuous work in the last 12 hours?",
+    q5_malaise_weakness: "5. Are you having general malaise /pain/weakness today?",
+    q6_cough_cold_mood: "6. Are you suffering from cough/cold/sinusitis/conjunctivitis/Anxiety/mood disorders?",
+    q7_alcohol_24h: "7. Have you consumed alcohol in the last 24 hours?",
+    q8_loose_motions_15d: "8. Have you had loose motions/urinary infection/mumps/measles/chickenpox in the last 15 days ?",
+    q9_migraine_weekly: "9. Do you have migraine headache at a frequency of more than once a week?",
+    q10_daily_meds: "10. Are you on daily medications for blood pressure, diabetes, or blood thinners (not altered doses in 1 month)?",
+    counselor_name: "Pre donation counseling done by",
+    bag_manufacturer: "Bag Manufacturer (FK/DT/HLL/Maco/TP/JM)",
+    collection_duration: "Duration of blood collection (mins)",
+    reaction_management: "Adverse Reaction Management",
+
+    // Table Headers & Controls
+    th_no: "No.",
+    th_question: "Question Statement (English & Marathi)",
+    th_response: "Response",
+    opt_yes: "Yes / होय",
+    opt_no: "No / नाही",
+    med_history_title: "Medication & Disease History (Timeframe Deferral Checklist)",
+
+    // Timeframes
+    tf_daily_2m: "Daily Basis (2 months)",
+    tf_3days: "In last 3 days",
+    tf_7days: "In last 7 days",
+    tf_2weeks: "In last 2 Weeks",
+    tf_28days: "In last 28 days",
+    tf_1month: "In last 1 month",
+    tf_3months: "In last 3 months",
+    tf_6months: "In last 6 months",
+    tf_1year: "In last 1 Year",
+    tf_2years: "In last 2 years",
+
+    // Medication Descriptions
+    med_daily_thyroid_desc: "Medicines for thyroid disorders (थायरॉईडच्या कमतरतेसाठी औषधे)",
+    med_3days_aspirin_desc: "Aspirin or Salicylates (ॲस्पिरिन किंवा सॅलिसिलेट्स)",
+    med_7days_antifungals_desc: "Antifungals (Ketoconazole) or Anthelmintics (Mebendazole)",
+    med_2weeks_antibiotics_desc: "Antibiotics, steroids, measles/mumps/chickenpox, vaccines (Pertussis, Hep B, Covid Non-live)",
+    med_28days_vaccines_desc: "Vaccines (Hep A, Typhoid, Swine flu, Polio, COVID-19 live), Anti-tetanus/venom serum",
+    med_1month_acne_prostate_desc: "Acne treatment (Isotretinoin) or Prostate complaint treatment (Finasteride)",
+    med_3months_malaria_desc: "Treatment for malaria or Minor Surgery (मलेरिया उपचार / किरकोळ शस्त्रक्रिया)",
+    med_6months_radioactive_desc: "Radioactive injection, Dutasteride, Hair transplant / PRP therapy, Dengue/Chikungunya",
+    med_1year_rabies_tattoo_desc: "Anti-rabies, Jaundice / Hep A/E, Tattoo / piercing, Blood transfusion / major surgery, Typhoid",
+    med_2years_tb_desc: "Tuberculosis (क्षयरोग) or Osteomyelitis (हाडांचा संसर्ग)",
+
+    // Permanent Deferral Checkboxes (15)
+    perm_chest_pain: "Chest Pain / Shortness of Breath / Swollen Feet (छातीत दुखणे/पायांना सूज)",
+    perm_etretinate: "Treatment with Etretinate (ॲट्रीटिनेट औषध उपचार)",
+    perm_ankylosing_spondylosis: "Ankylosing Spondylosis (अँकायलोझिंग स्पॉन्डिलायसिस)",
+    perm_asthma_lung: "Asthma & Chronic Obstructive/Restrictive Lung Disease (दमा व फुफ्फुसाचा आजार)",
+    perm_kidney_disease: "Chronic Kidney Infection / Failure (मूत्रपिंडाचा आजार)",
+    perm_insulin_diabetes: "Insulin Dependent Diabetes / Multi-organ Complications (मधुमेह इन्सुलिन)",
+    perm_delayed_faints: "Unexplained Delayed Faints / Faint with Injury / Two Consecutive Faints",
+    perm_epilepsy_fits: "Epilepsy / Fits / Seizures / Convulsions (झटके / अपस्मार)",
+    perm_heart_disease: "Heart Disease / Surgery / Bypass / Angioplasty / Angina / Rheumatic Heart (हृदयरोग)",
+    perm_cancer_cytotoxic: "Cancer / Cytotoxic Drugs / Stem Cells / Organ Transplant (कर्करोग)",
+    perm_liver_failure: "Chronic Liver Infection / Failure / Leprosy / Leishmaniasis / Polycythemia Vera",
+    perm_hiv_high_risk: "HIV Risk / Transgender / MSM / Sex Workers / Syphilis / Gonorrhea (एच.आय.व्ही धोका)",
+    perm_severe_allergy: "Severe Allergy to Betadine/Spirit/Adhesive Bandage (तीव्र ॲलर्जी)",
+    perm_thyroid_malignant: "Thyroid Disorders - Thyrotoxicosis / Malignant Tumor / Anti-thyroid drugs",
+    perm_hemoglobinopathies: "Hemoglobinopathies / Red Cell Enzyme Deficiencies with Hemolysis",
+
     // Step 3 Medication History Table Headers
     med_timeframe: "Timeframe / Duration",
     med_question: "Medication / Condition Question",
     med_answer: "Yes / No",
     yes: "Yes",
     no: "No",
+
+    // Questions 11-17 & Consent Clauses (English)
+    q11_endoscopy_title: "11. Endoscopy / Durbeeni Inspection History (दुर्बिणी मधून तपासणी)",
+    q11a_endoscopy_sampling: "11A. No sampling done within 7 days?",
+    q11b_endoscopy_malignant: "11B (1). Finding is Malignant / Cancer disorder?",
+    q11b_endoscopy_benign: "11B (2). Finding is Benign disorder (within 28 days)?",
+    q11c_endoscopy_other: "11C. Any other disorder till completion of treatment?",
+
+    q12_blood_donation_title: "12. For Blood Donation History & Past Complications",
+    q12a_male_3months: "12A. For males: Have you donated blood in the last 3 months?",
+    q12b_female_4months: "12B. For females: Have you donated blood in the last 4 months?",
+    q12c_donation_trouble: "12C. Have you faced any trouble/complication after previous blood donations (fainting, swelling, arm discoloration)?",
+    q12d_platelets_28days: "12D. Have you donated platelets in the last 28 days (with complete red cell infusion)?",
+
+    q14a_hiv_diagnosis: "14A. Were you diagnosed with HIV/AIDS, Hepatitis B/C, Syphilis, or Gonorrhea?",
+    q14b_unsafe_sex: "14B. Are you having unsafe sexual practices (multiple partners / sex for money)?",
+    q14c_injected_narcotics: "14C. Have you ever injected drugs/narcotics not prescribed by a qualified doctor?",
+    q14d_partner_risk: "14D. Does your sexual partner belong to any above categories (14A, B, C)?",
+
+    q15a_night_sweats: "15A. Night Sweats",
+    q15b_persistent_fever: "15B. Persistent Fever",
+    q15c_swollen_glands: "15C. Swollen Glands",
+    q15d_persistent_diarrhea: "15D. Persistent Diarrhoea",
+    q15e_weight_loss: "15E. Unexplained weight loss",
+
+    q16a_female_abortion: "16A. Abortion in the last 6 months?",
+    q16b_female_pregnant: "16B. Are you pregnant?",
+    q16c_female_delivery: "16C. Delivered a child in the last 12 months?",
+    q16d_female_breastfeeding: "16D. Are you breastfeeding your baby?",
+    q16e_female_periods: "16E. Are you having your periods today?",
+    q16f_female_pcod: "16F. Are you on medication for PCOD?",
+
+    q17a_air_crew: "17A. Role as air crew member?",
+    q17b_long_driver: "17B. Driver for long distance vehicle?",
+    q17c_strenuous_work: "17C. Strenuous work required?",
+    q17d_emergency_service: "17D. Emergency service (Fire / Ambulance)?",
+    q17e_altitude_diving: "17E. Work above (flying) or below (diving) sea level?",
+    q17f_past_12h_duties: "17F. Performed any of the above duties in the last 12 hours?",
 
     // Step 4 Deferral Checklist & High Risk
     permanent_deferral_title: "13. Permanent Deferral Conditions Checkbox Grid",
@@ -174,12 +285,19 @@ const I18N = {
     btn_view: "पहा (View)",
     btn_edit: "संपादित करा",
     btn_unlock: "अनलॉक करा",
+    btn_modify: "नोंद बदला",
+    btn_edit_user: "संपादित करा",
+    btn_change_password: "पासवर्ड बदला",
+    btn_delete_user: "हटवा",
+    badge_protected_admin: "सुरक्षित प्रशासक",
+    title_edit_user: "वापरकर्ता माहिती संपादित करा",
+    title_change_password: "वापरकर्ता पासवर्ड बदला",
 
     // Step Headers
     step_1: "१. रक्तदाता प्राथमिक माहिती",
-    step_2: "२. वैद्यकीय तपासणी",
-    step_3: "३. औषध व आजार इतिहास (प्रश्नावली)",
-    step_4: "४. कायमस्वरूपी स्थगिती व लक्षणे",
+    step_2: "२. प्राथमिक आरोग्य प्रश्नावली",
+    step_3: "३. स्थगिती तक्ता व इतिहास",
+    step_4: "४. वैद्यकीय तपासणी (Medical Exam)",
     step_5: "५. रक्त संकलन व बॅग तपशील",
     step_6: "६. मान्यतापत्र व वैद्यकीय स्वाक्षरी",
 
@@ -209,6 +327,72 @@ const I18N = {
     last_donation_date: "शेवटच्या दानाची तारीख",
     number_of_past_donations: "एकूण मागील रक्तदान",
 
+    // Table Headers & Controls (Marathi)
+    th_no: "क्र.",
+    th_question: "प्रश्नावली विधान (मराठी)",
+    th_response: "प्रतिसाद",
+    opt_yes: "होय",
+    opt_no: "नाही",
+    med_history_title: "औषधोपचार व आजारांचा इतिहास (कालावधीनुसार स्थगिती तक्ता)",
+
+    // Timeframes (Marathi)
+    tf_daily_2m: "दररोज (२ महिने)",
+    tf_3days: "गेल्या ३ दिवसांत",
+    tf_7days: "गेल्या ७ दिवसांत",
+    tf_2weeks: "गेल्या २ आठवड्यांत",
+    tf_28days: "गेल्या २८ दिवसांत",
+    tf_1month: "गेल्या १ महिन्यात",
+    tf_3months: "गेल्या ३ महिन्यात",
+    tf_6months: "गेल्या ६ महिन्यात",
+    tf_1year: "गेल्या १ वर्षात",
+    tf_2years: "गेल्या २ वर्षांत",
+
+    // Medication Descriptions (Marathi)
+    med_daily_thyroid_desc: "थायरॉईडच्या कमतरतेसाठी औषधे (Medicines for thyroid disorders)",
+    med_3days_aspirin_desc: "ॲस्पिरिन किंवा सॅलिसिलेट्स (Aspirin or Salicylates)",
+    med_7days_antifungals_desc: "फंगल संसर्ग किंवा कृमींवरील औषधे (Antifungals / Anthelmintics)",
+    med_2weeks_antibiotics_desc: "एंटीबायोटिक्स, स्टिरॉइड्स, कांजिण्या/गोवर, लशी (Pertussis, Hep B, Covid)",
+    med_28days_vaccines_desc: "काविळ, टायफॉईड, पोलिओ, डेंग्यू, विषरोधक लस (Anti-tetanus/venom serum)",
+    med_1month_acne_prostate_desc: "पिंपल्स/मुहासे औषधोपचार किंवा प्रोस्टेट उपचार (Isotretinoin / Finasteride)",
+    med_3months_malaria_desc: "मलेरिया उपचार किंवा किरकोळ शस्त्रक्रिया (Treatment for malaria / Minor Surgery)",
+    med_6months_radioactive_desc: "रेडिओॲक्टिव्ह इंजेक्शन, हेअर ट्रान्सप्लांट/PRP, डेंग्यू/चिकुनगुनिया",
+    med_1year_rabies_tattoo_desc: "रेबीज लस, काविळ, टॅटू/टोचणे, रक्त संक्रमण/मोठी शस्त्रक्रिया, टायफॉईड",
+    med_2years_tb_desc: "क्षयरोग (Tuberculosis) किंवा हाडांचा संसर्ग (Osteomyelitis)",
+
+    // Permanent Deferral Checkboxes (15 - Marathi)
+    perm_chest_pain: "छातीत दुखणे / श्वास घेण्यास त्रास / पायांना सूज (Chest Pain / Shortness of Breath)",
+    perm_etretinate: "ॲट्रीटिनेट औषध उपचार (Treatment with Etretinate)",
+    perm_ankylosing_spondylosis: "अँकायलोझिंग स्पॉन्डिलायसिस (Ankylosing Spondylosis)",
+    perm_asthma_lung: "दमा व फुफ्फुसाचा तीव्र आजार (Asthma & Chronic Lung Disease)",
+    perm_kidney_disease: "मूत्रपिंडाचा जुनाट संसर्ग / अपयश (Chronic Kidney Infection / Failure)",
+    perm_insulin_diabetes: "इन्सुलिनवर आधारित मधुमेह / अवयव गुंतागुंत (Insulin Dependent Diabetes)",
+    perm_delayed_faints: "कारण नसताना आलेली मूर्च्छा / दुखापतीसह चक्कर / सलग दोनदा मूर्च्छा",
+    perm_epilepsy_fits: "झटके / अपस्मार / मिर्गी (Epilepsy / Fits / Seizures / Convulsions)",
+    perm_heart_disease: "हृदयरोग / शस्त्रक्रिया / बायपास / अँजिओप्लास्टी (Heart Disease / Bypass)",
+    perm_cancer_cytotoxic: "कर्करोग (Cancer) / किमोथेरपी / स्टेम सेल्स / अवयव प्रत्यारोपण",
+    perm_liver_failure: "यकृताचा आजार / कुष्ठरोग / पॉलियुसायथेमिया (Chronic Liver Infection / Leprosy)",
+    perm_hiv_high_risk: "एच.आय.व्ही धोका / ट्रान्सजेंडर / एमएसएम / सेक्स वर्कर्स / सिफिलीस / गॉनेरिया",
+    perm_severe_allergy: "बेटाडीन / स्पिरीट / बँडेजची तीव्र ॲलर्जी (Severe Allergy to Betadine/Spirit)",
+    perm_thyroid_malignant: "थायरॉईड दुर्धर आजार / थायरोटॉक्सिकोसिस / मॅलिग्नंट ट्यूमर",
+    perm_hemoglobinopathies: "रक्तपेशी दोष / हिमोग्लोबिन विकार / थॅलेसेमिया (Hemoglobinopathies)",
+
+    // Page 1 Questions (1 to 10) Marathi
+    q1_age_18_65: "१. आपण १८-६५ वर्षे या वयोगटातील आहात का ?",
+    q2_meals_4h: "२. गेल्या ४ तासांत आपण नाश्ता/जेवण केले आहे का?",
+    q3a_slept_well: "३अ. काल रात्री चांगली झोप लागली का?",
+    q3b_night_shift_sleep: "३ब. जर आपण रात्रीच्या शिफ्टमध्ये काम करत असाल, तर आपणास पुरेशी शांत झोप मिळाली आहे का?",
+    q4_heavy_work_12h: "४. गेल्या १२ तासांत आपण अतिश्रमाची कामे केली आहेत का?",
+    q5_malaise_weakness: "५. आज आपणास कणकण /अंगदुखी / अशक्तपणा जाणवत आहे का?",
+    q6_cough_cold_mood: "६. आपणास खोकला/सर्दी/डोळे येणे / चिंता/ मूड डिसऑर्डरचा त्रास आहे का?",
+    q7_alcohol_24h: "७. गेल्या २४ तासांत आपण मद्य प्राशन केले आहे का?",
+    q8_loose_motions_15d: "८. गेल्या १५ दिवसांत आपणास जुलाब / मूत्र संसर्ग/गालगुंड/गोवर/कांजिण्या यांपैकी काही झाले होते का ?",
+    q9_migraine_weekly: "९. आपणास आठवड्यातून एकापेक्षा जास्त वेळा मायग्रेन / डोकेदुखीचा त्रास होतो का?",
+    q10_daily_meds: "१०. आपण उच्च रक्तदाब, मधुमेह किंवा रक्त पातळ करणाऱ्या औषधांवर आहात का (१ महिन्यात डोस बदललेला नाही)?",
+    counselor_name: "रक्तदानपूर्व समुपदेशन करणारे",
+    bag_manufacturer: "बॅग उत्पादक (FK/DT/HLL/Maco/TP/JM)",
+    collection_duration: "रक्त संकलनाचा कालावधी (मिनिटे)",
+    reaction_management: "त्रासाचे निवारण / व्यवस्थापन",
+
     // Step 2 Medical Exam
     weight_kg: "वजन (कि.ग्रॅ.)",
     height_cm: "उंची (से.मी.)",
@@ -227,12 +411,43 @@ const I18N = {
     deferral_reason: "स्थगितीचे कारण",
     deferral_duration: "स्थगितीचा कालावधी",
 
-    // Step 3 Medication History Table Headers
-    med_timeframe: "कालावधी / वेळ",
-    med_question: "औषध / आजार माहिती",
-    med_answer: "होय / नाही",
-    yes: "होय",
-    no: "नाही",
+    // Questions 11-17 & Consent Clauses (Marathi)
+    q11_endoscopy_title: "११. दुर्बिणी मधून तपासणी (Endoscopy History)",
+    q11a_endoscopy_sampling: "११A. गेल्या ७ दिवसात नमुना (biopsy) घेतलेला नाही?",
+    q11b_endoscopy_malignant: "११B (१). कॅन्सरचे निदान (Malignant disorder) आहे का?",
+    q11b_endoscopy_benign: "११B (२). सौम्य आजार निदान (Benign - २८ दिवस) आहे का?",
+    q11c_endoscopy_other: "११C. इतर आजारावर उपचार पूर्ण होईपर्यंत?",
+
+    q12_blood_donation_title: "१२. पूर्वीचे रक्तदान व त्रास (Blood Donation History)",
+    q12a_male_3months: "१२A. पुरुषांसाठी: गेल्या ३ महिन्यात रक्तदान केले आहे का?",
+    q12b_female_4months: "१२B. महिलांसाठी: गेल्या ४ महिन्यात रक्तदान केले आहे का?",
+    q12c_donation_trouble: "१२C. मागील रक्तदानानंतर काही त्रास/गुंतागुंत (चक्कर, सूज, हात काळा पडणे) झाली होती का?",
+    q12d_platelets_28days: "१२D. गेल्या २८ दिवसांत प्लेटलेट्स दान केले आहेत का?",
+
+    q14a_hiv_diagnosis: "१४A. आपणास एच.आय.व्ही, काविळ (Hep B/C), गुप्तरोग (Syphilis) निदान झाले आहे का?",
+    q14b_unsafe_sex: "१४B. असुरक्षित लैंगिक संबंध किंवा अनेक भागीदार आहेत का?",
+    q14c_injected_narcotics: "१४C. डॉक्टरांच्या सल्ल्याशिवाय अंमली पदार्थांचे इंजेक्शन घेतले आहे का?",
+    q14d_partner_risk: "१४D. आपल्या लैंगिक जोडीदारास वरीलपैकी (१४A, B, C) कोणताही धोका आहे का?",
+
+    q15a_night_sweats: "१५A. रात्री घाम येणे (Night Sweats)",
+    q15b_persistent_fever: "१५B. सतत ताप राहणे (Persistent Fever)",
+    q15c_swollen_glands: "१५C. लसिका ग्रंथींना सूज (Swollen Glands)",
+    q15d_persistent_diarrhea: "१५D. सतत जुलाब होणे (Persistent Diarrhoea)",
+    q15e_weight_loss: "१५E. कारण नसताना वजन कमी होणे (Unexplained weight loss)",
+
+    q16a_female_abortion: "१६A. गेल्या ६ महिन्यात गर्भपात झाला आहे का?",
+    q16b_female_pregnant: "१६B. आपण गरोदर आहात का?",
+    q16c_female_delivery: "१६C. गेल्या १२ महिन्यात प्रसूती झाली आहे का?",
+    q16d_female_breastfeeding: "१६D. आपण लहान बाळाला स्तनपान करत आहात का?",
+    q16e_female_periods: "१६E. आज आपली मासिक पाळी आहे का?",
+    q16f_female_pcod: "१६F. PCOD साठी औषधोपचार चालू आहेत का?",
+
+    q17a_air_crew: "१७A. विमान चालक / विमान क्रू सदस्य म्हणून काम?",
+    q17b_long_driver: "१७B. दूरच्या प्रवासाचे वाहन चालक (Driver)?",
+    q17c_strenuous_work: "१७C. अतिश्रमाचे काम करावे लागणारे आहे का?",
+    q17d_emergency_service: "१७D. आपत्कालीन सेवा (फायर ब्रिगेड / रुग्णवाहिका)?",
+    q17e_altitude_diving: "१७E. समुद्राच्या अति उंचावर (उडणे) किंवा खोलवर (डायव्हिंग) काम?",
+    q17f_past_12h_duties: "१७F. गेल्या १२ तासांत वरीलपैकी कोणतेही काम केले आहे का?",
 
     // Step 4 Deferral Checklist & High Risk
     permanent_deferral_title: "१३. रक्तदानास कायमस्वरूपी स्थगिती (कृपया टिक करा ✓)",
@@ -309,8 +524,22 @@ function applyTranslations() {
     const translation = getTranslation(key);
     if (el.tagName === 'INPUT' && el.getAttribute('placeholder')) {
       el.setAttribute('placeholder', translation);
+    } else if (el.tagName === 'OPTION') {
+      el.textContent = translation;
     } else {
       el.innerHTML = translation;
+    }
+  });
+
+  // Dynamically update standard Yes / No dropdown options across form steps
+  document.querySelectorAll('select option[value="Yes"]').forEach(opt => {
+    if (!opt.hasAttribute('data-i18n')) {
+      opt.textContent = (currentLang === 'mr') ? 'होय (Yes)' : 'Yes / होय';
+    }
+  });
+  document.querySelectorAll('select option[value="No"]').forEach(opt => {
+    if (!opt.hasAttribute('data-i18n')) {
+      opt.textContent = (currentLang === 'mr') ? 'नाही (No)' : 'No / नाही';
     }
   });
 
@@ -330,3 +559,4 @@ function applyTranslations() {
 document.addEventListener('DOMContentLoaded', () => {
   applyTranslations();
 });
+

@@ -31,6 +31,55 @@
     .btn-print-trigger:hover {
       background: #047857;
     }
+    .badge-yes {
+      color: #B91C1C;
+      font-weight: bold;
+      background: #FEE2E2;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 8.5pt;
+    }
+    .badge-no {
+      color: #047857;
+      font-weight: bold;
+      font-size: 8.5pt;
+    }
+    .section-header {
+      background: #1E3A8A !important;
+      color: white !important;
+      font-weight: bold;
+      font-size: 9.5pt;
+      padding: 5px 10px;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      border-radius: 3px;
+      letter-spacing: 0.3px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .sub-section-header {
+      background: #E0E7FF !important;
+      color: #1E3A8A !important;
+      font-weight: bold;
+      font-size: 9pt;
+      padding: 3px 8px;
+      margin-top: 6px;
+      margin-bottom: 3px;
+      border-radius: 2px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    @media print {
+      .section-header, .sub-section-header {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .badge-yes {
+        background: #FEE2E2 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
   </style>
 </head>
 <body>
@@ -45,24 +94,34 @@
     </div>
   </div>
 
+  {# --- Data Setup --- #}
+  {% set qa = questionnaire_answers if questionnaire_answers else {} %}
+  {% set mh = medication_history if medication_history else {} %}
+  {% set pd = permanent_deferrals if permanent_deferrals else [] %}
+
   <div class="print-container">
     <div class="print-page continuous-form">
-      <!-- MAIN FORM HEADER -->
+
+      <!-- ===== HEADER ===== -->
       <table class="print-header-table">
         <tr>
-          <td width="12%" style="text-align:center; font-size:1.8rem; background:#F8FAFC;">🩸</td>
+          <td width="12%" style="text-align:center; font-size:1.8rem; background:#F8FAFC;">🕉️ 🩸</td>
           <td width="73%">
-            <div class="print-title">JANKALYAN BLOOD CENTRE (जनकल्याण रक्तकेंद्र)</div>
-            <div class="print-subtitle">BLOOD DONOR REGISTRATION AND MEDICAL EXAMINATION FORM (रक्तदाता नोंदणी व वैद्यकीय तपासणी)</div>
+            <div style="font-size:8.5pt; text-transform:uppercase; font-weight:bold; color:#475569;">Janakalyan Raktapedhi Trust's / जनकल्याण रक्तपेढी न्यासा'चे</div>
+            <div class="print-title">JANKALYAN BLOOD CENTRE, PUNE (जनकल्याण रक्तकेंद्र, पुणे)</div>
+            <div class="print-subtitle">Regional Blood Transfusion Centre | F.D.A. Lic. No. PD/03</div>
+            <div style="font-size:8pt; color:#334155;">1003, Shukrawar Peth, Pune 411 002. | रक्तदान करण्यासाठी पुढे आल्याबद्दल धन्यवाद !</div>
           </td>
-          <td width="15%" style="background:#F8FAFC;">
-            <div class="form-code">QF/JKRP/18<br>Form Record</div>
+          <td width="15%" style="background:#F8FAFC; text-align:center;">
+            <div class="form-code">QF/JKRP/18<br><strong>Complete Form</strong></div>
           </td>
         </tr>
       </table>
 
-      <!-- 1. DONOR DEMOGRAPHICS -->
-      <div class="print-section-header">1. DONOR DEMOGRAPHICS (रक्तदाता माहिती)</div>
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 1: DONOR DEMOGRAPHICS                                      -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="section-header">1. DONOR DEMOGRAPHICS (रक्तदाता प्राथमिक माहिती)</div>
       <table class="print-table">
         <tr>
           <td width="33%"><strong>Record Number:</strong> {{ record.record_number }}</td>
@@ -71,26 +130,32 @@
         </tr>
         <tr>
           <td colspan="2"><strong>Full Name (नाव):</strong> {{ donor.full_name }}</td>
-          <td><strong>Gender:</strong> {{ donor.gender }}</td>
+          <td><strong>Gender (लिंग):</strong> {{ donor.gender }}</td>
         </tr>
         <tr>
           <td><strong>Age:</strong> {{ donor.age }} yrs</td>
-          <td><strong>DOB:</strong> {{ donor.date_of_birth | format_date or 'N/A' }}</td>
-          <td><strong>Mobile:</strong> {{ donor.mobile_number }}</td>
+          <td><strong>DOB (जन्मतारीख):</strong> {{ donor.date_of_birth | format_date or 'N/A' }}</td>
+          <td><strong>Mobile (मोबाईल):</strong> {{ donor.mobile_number }}</td>
         </tr>
         <tr>
-          <td colspan="2"><strong>Address (पत्ता):</strong> {{ donor.residential_address }}, {{ donor.city_district }} - {{ donor.pincode }}</td>
+          <td><strong>Occupation (व्यवसाय):</strong> {{ donor.occupation or 'N/A' }}</td>
+          <td colspan="2"><strong>Organization / Camp Name:</strong> {{ donor.organization_company or 'N/A' }}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Address (पत्ता):</strong> {{ donor.residential_address }}, {{ donor.city_district }}{{ ' - ' + donor.pincode if donor.pincode else '' }}</td>
           <td><strong>Email:</strong> {{ donor.email or 'N/A' }}</td>
         </tr>
         <tr>
           <td><strong>Known Blood Group:</strong> <strong style="font-size:10.5pt; color:#991B1B;">{{ donor.blood_group_known or 'Unknown' }}</strong></td>
           <td><strong>Donation Type:</strong> {{ donor.donation_type }}</td>
-          <td><strong>Past Donations:</strong> {{ donor.number_of_past_donations or 0 }}</td>
+          <td><strong>Past Donations:</strong> {{ donor.number_of_past_donations or 0 }} (Last: {{ donor.last_donation_date | format_date or 'N/A' }})</td>
         </tr>
       </table>
 
-      <!-- 2. MEDICAL EXAMINATION -->
-      <div class="print-section-header">2. MEDICAL EXAMINATION (वैद्यकीय तपासणी)</div>
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 2: MEDICAL EXAMINATION                                     -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="section-header">2. MEDICAL EXAMINATION (वैद्यकीय तपासणी - Staff & MO)</div>
       <table class="print-table">
         <tr>
           <td width="25%"><strong>Weight:</strong> {{ medical_exam.weight_kg }} kg</td>
@@ -114,26 +179,38 @@
         </tr>
       </table>
 
-      <!-- 3. BLOOD BAG DETAILS -->
-      <div class="print-section-header">3. BLOOD BAG COLLECTION DETAILS (रक्त संकलन तपशील)</div>
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 3: BLOOD BAG COLLECTION DETAILS                            -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="section-header">3. BLOOD BAG COLLECTION DETAILS (रक्त संकलन व बॅग तपशील)</div>
       <table class="print-table">
         <tr>
           <td width="25%"><strong>Blood Bag Barcode:</strong> {{ donation.blood_bag_number }}</td>
           <td width="25%"><strong>Bag Type:</strong> {{ donation.bag_type }}</td>
-          <td width="25%"><strong>Anticoagulant:</strong> {{ donation.anticoagulant }}</td>
+          <td width="25%"><strong>Manufacturer:</strong> {{ donation.bag_manufacturer or 'FK/DT/HLL' }}</td>
           <td width="25%"><strong>Volume:</strong> {{ donation.volume_ml }} mL</td>
         </tr>
         <tr>
-          <td colspan="2"><strong>Phlebotomy Site:</strong> {{ donation.phlebotomy_site }}</td>
-          <td colspan="2"><strong>Phlebotomist Staff:</strong> {{ donation.phlebotomist_staff_id }}</td>
+          <td><strong>Anticoagulant:</strong> {{ donation.anticoagulant }}</td>
+          <td><strong>Batch No.:</strong> {{ donation.batch_number or 'N/A' }}</td>
+          <td><strong>Segment/Tubing:</strong> {{ donation.segment_number or 'N/A' }}</td>
+          <td><strong>Collection Duration:</strong> {{ donation.collection_duration or '10' }} min</td>
         </tr>
         <tr>
-          <td colspan="4"><strong>Adverse Reaction:</strong> {{ donation.adverse_reaction }} {{ donation.reaction_details or '' }}</td>
+          <td colspan="2"><strong>Pre-donation Counseling Done By:</strong> {{ donation.counselor_name or 'Staff' }}</td>
+          <td colspan="2"><strong>Phlebotomy Done By / Site:</strong> {{ donation.phlebotomist_staff_id or 'Staff' }} ({{ donation.phlebotomy_site }})</td>
+        </tr>
+        <tr>
+          <td colspan="4"><strong>Adverse Reaction & Management:</strong> {{ donation.adverse_reaction }} {{ donation.reaction_details or '' }}</td>
         </tr>
       </table>
 
-      <!-- 4. MEDICATION & DISEASE HISTORY -->
-      <div class="print-section-header">4. MEDICATION & DISEASE QUESTIONNAIRE (औषधे व आजार इतिहास - QF/JKRP/18 Pages 2 & 3)</div>
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 4: MEDICATION & DISEASE QUESTIONNAIRE (Pages 2 & 3)        -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="section-header">4. MEDICATION & DISEASE QUESTIONNAIRE (औषधे व आजार इतिहास - QF/JKRP/18 Pages 2 & 3)</div>
+
+      <!-- Timeframe Deferral Medication Table -->
       <table class="print-table">
         <thead>
           <tr>
@@ -146,96 +223,334 @@
           <tr>
             <td>Daily (2 months)</td>
             <td>Medicines for thyroid disorders (थायरॉईडच्या कमतरतेसाठी औषधे)</td>
-            <td><strong>{{ medication_history.get('med_daily_thyroid', 'No') }}</strong></td>
+            <td>{% if qa.get('med_daily_thyroid', mh.get('med_daily_thyroid', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 3 days</td>
             <td>Aspirin or Salicylates (ॲस्पिरिन किंवा सॅलिसिलेट्स)</td>
-            <td><strong>{{ medication_history.get('med_3days_aspirin', 'No') }}</strong></td>
+            <td>{% if qa.get('med_3days_aspirin', mh.get('med_3days_aspirin', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 7 days</td>
             <td>Antifungals (eg. Ketoconazole) or Anthelmintics (eg. Mebendazole)</td>
-            <td><strong>{{ medication_history.get('med_7days_antifungals', 'No') }}</strong></td>
+            <td>{% if qa.get('med_7days_antifungals', mh.get('med_7days_antifungals', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 2 Weeks</td>
             <td>Antibiotics, steroids, measles/mumps/chickenpox, vaccines</td>
-            <td><strong>{{ medication_history.get('med_2weeks_antibiotics', 'No') }}</strong></td>
+            <td>{% if qa.get('med_2weeks_antibiotics', mh.get('med_2weeks_antibiotics', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 28 days</td>
             <td>Vaccines (Hep A, Typhoid, Swine flu, COVID-19 live), Anti-tetanus serum</td>
-            <td><strong>{{ medication_history.get('med_28days_vaccines', 'No') }}</strong></td>
+            <td>{% if qa.get('med_28days_vaccines', mh.get('med_28days_vaccines', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 1 month</td>
             <td>Acne treatment (Isotretinoin) or Prostate treatment (Finasteride)</td>
-            <td><strong>{{ medication_history.get('med_1month_acne_prostate', 'No') }}</strong></td>
+            <td>{% if qa.get('med_1month_acne_prostate', mh.get('med_1month_acne_prostate', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 3 months</td>
             <td>Treatment for malaria or Minor Surgery (मलेरिया / किरकोळ शस्त्रक्रिया)</td>
-            <td><strong>{{ medication_history.get('med_3months_malaria', 'No') }}</strong></td>
+            <td>{% if qa.get('med_3months_malaria', mh.get('med_3months_malaria', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 6 months</td>
             <td>Radioactive injection, Dutasteride, Hair transplant / PRP, Dengue/Chikungunya</td>
-            <td><strong>{{ medication_history.get('med_6months_radioactive', 'No') }}</strong></td>
+            <td>{% if qa.get('med_6months_radioactive', mh.get('med_6months_radioactive', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 1 Year</td>
             <td>Anti-rabies, Jaundice/Hep A/E, Tattoo/piercing, Transfusion/major surgery</td>
-            <td><strong>{{ medication_history.get('med_1year_rabies_tattoo', 'No') }}</strong></td>
+            <td>{% if qa.get('med_1year_rabies_tattoo', mh.get('med_1year_rabies_tattoo', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Last 2 years</td>
             <td>Tuberculosis (क्षयरोग) or Osteomyelitis (हाडांचा संसर्ग)</td>
-            <td><strong>{{ medication_history.get('med_2years_tb', 'No') }}</strong></td>
+            <td>{% if qa.get('med_2years_tb', mh.get('med_2years_tb', 'No')) == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
           </tr>
         </tbody>
       </table>
 
-      <!-- 5. PERMANENT DEFERRAL CHECKLIST & SYMPTOMS -->
-      <div class="print-section-header">5. PERMANENT DEFERRAL & SYMPTOMS (कायमस्वरूपी स्थगिती व लक्षणे)</div>
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 5: HEALTH QUESTIONNAIRE (Q1-Q10)                           -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="section-header">5. HEALTH QUESTIONNAIRE (प्राथमिक आरोग्य प्रश्नावली - Q1 to Q10)</div>
       <table class="print-table">
-        <tr>
-          <td width="60%">
-            <strong>Selected Permanent Conditions:</strong><br>
-            {% if permanent_deferrals %}
-              <span style="color:#991B1B; font-weight:bold;">{{ permanent_deferrals | join(', ') }}</span>
-            {% else %}
-              <em>None Checked (कोणतीही नोंद नाही - All clear)</em>
-            {% endif %}
-          </td>
-          <td width="40%">
-            <strong>Recent Fever/Night Sweats:</strong> {{ questionnaire_answers.get('symptoms_fever_sweats', 'No') }}<br>
-            <strong>Female Special Questions:</strong> {{ questionnaire_answers.get('female_pregnant', 'No') }}
-          </td>
-        </tr>
+        <thead>
+          <tr>
+            <th width="8%">No.</th>
+            <th width="77%">Question Statement (English & Marathi)</th>
+            <th width="15%">Response</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td>Are you within 18-65 years of age? (आपण १८-६५ वर्षे या वयोगटातील आहात का?)</td>
+            <td>{% if qa.get('q1_age_18_65', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td>Have you taken breakfast/meals within the last 4 hours? (गेल्या ४ तासांत नाश्ता/जेवण केले आहे का?)</td>
+            <td>{% if qa.get('q2_meals_4h', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>3A</strong></td>
+            <td>Have you slept well last night? (काल रात्री चांगली झोप लागली का?)</td>
+            <td>{% if qa.get('q3a_slept_well', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>3B</strong></td>
+            <td>If night shift worker, got undisturbed sleep adequately? (शांत झोप मिळाली आहे का?)</td>
+            <td>{% if qa.get('q3b_night_shift_sleep', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>4</strong></td>
+            <td>Involved in heavy/strenuous work in last 12 hours? (गेल्या १२ तासांत अतिश्रमाची कामे केली आहेत का?)</td>
+            <td>{% if qa.get('q4_heavy_work_12h', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>5</strong></td>
+            <td>Having general malaise/pain/weakness today? (आज कणकण/अंगदुखी/अशक्तपणा जाणवत आहे का?)</td>
+            <td>{% if qa.get('q5_malaise_weakness', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>6</strong></td>
+            <td>Suffering from cough/cold/sinusitis/conjunctivitis/Anxiety/mood? (खोकला/सर्दी/चिंता/मूड डिसऑर्डर)</td>
+            <td>{% if qa.get('q6_cough_cold_mood', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>7</strong></td>
+            <td>Consumed alcohol in the last 24 hours? (गेल्या २४ तासांत मद्य प्राशन केले आहे का?)</td>
+            <td>{% if qa.get('q7_alcohol_24h', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>8</strong></td>
+            <td>Loose motions/urinary infection/mumps/measles/chickenpox in 15 days? (जुलाब/मूत्र संसर्ग/गोवर/कांजिण्या)</td>
+            <td>{% if qa.get('q8_loose_motions_15d', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>9</strong></td>
+            <td>Migraine headache at frequency of >1 time a week? (आठवड्यातून >१ वेळा मायग्रेन/डोकेदुखी)</td>
+            <td>{% if qa.get('q9_migraine_weekly', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>10</strong></td>
+            <td>Daily medications for BP, diabetes, or blood thinners? (उच्च रक्तदाब, मधुमेह, रक्त पातळ औषधे)</td>
+            <td>{% if qa.get('q10_daily_meds', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+        </tbody>
       </table>
 
-      <!-- 6. DONOR CONSENT -->
-      <div class="donor-consent-block">
-        <div style="font-weight:bold; font-size:9.5pt; color:#1E3A8A; margin-bottom:4px;">DONOR CONSENT (मान्यतापत्र)</div>
-        <p>1) I understand blood donation is voluntary and no remuneration was offered.</p>
-        <p>2) I give consent to utilize my plasma/components for patients or other blood storage centres.</p>
-        <p>3) I have read and answered all questions truthfully.</p>
-        <p>4) I consent to testing of my blood for HIV, Hepatitis B/C, Syphilis, and Malaria.</p>
-        <div style="margin-top:6px; text-align:right;">
-          <div style="display:inline-block; border-bottom:1px solid #000; width:160px; text-align:center;">
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 6: ENDOSCOPY HISTORY (Q11)                                 -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="sub-section-header">11. Endoscopy / Durbeeni Inspection History (दुर्बिणी मधून तपासणी)</div>
+      <table class="print-table">
+        <tbody>
+          <tr>
+            <td width="60%"><strong>11A.</strong> Endoscopy – No sampling done within 7 days? (गेल्या ७ दिवसात नमुना घेतलेला नाही)</td>
+            <td width="40%">{% if qa.get('q11a_endoscopy_sampling', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>11B(1).</strong> Finding is Malignant / Cancer disorder? (कॅन्सरचे निदान)</td>
+            <td>{% if qa.get('q11b_endoscopy_malignant', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>11B(2).</strong> Finding is Benign disorder (within 28 days)? (सौम्य आजार)</td>
+            <td>{% if qa.get('q11b_endoscopy_benign', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>11C.</strong> Any other disorder till completion of treatment? (इतर आजारावर उपचार)</td>
+            <td>{% if qa.get('q11c_endoscopy_other', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 7: BLOOD DONATION HISTORY & COMPLICATIONS (Q12)            -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="sub-section-header">12. Blood Donation History & Past Complications (रक्तदान इतिहास व गुंतागुंत)</div>
+      <table class="print-table">
+        <tbody>
+          <tr>
+            <td width="60%"><strong>12A.</strong> For males: Donated blood in the last 3 months? (पुरुषांसाठी: ३ महिन्यात रक्तदान)</td>
+            <td width="40%">{% if qa.get('q12a_male_3months', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>12B.</strong> For females: Donated blood in the last 4 months? (महिलांसाठी: ४ महिन्यात रक्तदान)</td>
+            <td>{% if qa.get('q12b_female_4months', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>12C.</strong> Post-donation complications/trouble (fainting/swelling/discoloration)? (त्रास/गुंतागुंत)</td>
+            <td>{% if qa.get('q12c_donation_trouble', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>12D.</strong> Donated platelets in the last 28 days? (प्लेटलेट्स दान)</td>
+            <td>{% if qa.get('q12d_platelets_28days', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 8: PERMANENT DEFERRAL CHECKLIST (Q13 - 15 items)           -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="section-header">6. PERMANENT DEFERRAL & SYMPTOMS (कायमस्वरूपी स्थगिती व लक्षणे)</div>
+      <div class="sub-section-header">13. Permanent Deferral Checklist (कायमस्वरूपी स्थगिती तक्ता - १५ घटक)</div>
+      <table class="print-table">
+        <tbody>
+          <tr>
+            <td width="50%"><strong>Chest Pain / Shortness of Breath:</strong> {% if 'chest_pain' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td width="50%"><strong>Treatment with Etretinate:</strong> {% if 'etretinate' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>Ankylosing Spondylosis:</strong> {% if 'ankylosing_spondylosis' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>Asthma & Chronic Lung Disease:</strong> {% if 'asthma_lung' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>Chronic Kidney Infection / Failure:</strong> {% if 'kidney_disease' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>Insulin Dependent Diabetes:</strong> {% if 'insulin_diabetes' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>Unexplained Delayed Faints:</strong> {% if 'delayed_faints' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>Epilepsy / Fits / Seizures:</strong> {% if 'epilepsy_fits' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>Heart Disease / Bypass / Surgery:</strong> {% if 'heart_disease' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>Cancer / Cytotoxic Drugs / Transplant:</strong> {% if 'cancer_cytotoxic' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>Chronic Liver Infection / Failure / Leprosy:</strong> {% if 'liver_failure' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>HIV Risk / Transgender / MSM / Sex Workers:</strong> {% if 'hiv_high_risk' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>Severe Allergy to Betadine/Spirit:</strong> {% if 'severe_allergy' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>Thyroid Disorders - Malignant / Thyrotoxicosis:</strong> {% if 'thyroid_malignant' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td colspan="2"><strong>Hemoglobinopathies / Red Cell Deficiencies with Hemolysis:</strong> {% if 'hemoglobinopathies' in pd %}<span class="badge-yes">YES (DEFERRED)</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 9: PERSONAL HIGH-RISK HISTORY (Q14)                        -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="sub-section-header">14. Personal High-Risk History (वैयक्तिक उच्च-जोखीम इतिहास)</div>
+      <table class="print-table">
+        <tbody>
+          <tr>
+            <td width="60%"><strong>14A.</strong> Diagnosed with HIV/AIDS, Hepatitis B/C, Syphilis, Gonorrhea? (एच.आय.व्ही., हिपॅटायटिस, सिफिलिस)</td>
+            <td width="40%">{% if qa.get('q14a_hiv_diagnosis', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>14B.</strong> Unsafe sexual practices / multiple partners? (असुरक्षित लैंगिक संबंध)</td>
+            <td>{% if qa.get('q14b_unsafe_sex', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>14C.</strong> Injected non-prescribed drugs/narcotics? (बेकायदेशीर ड्रग्स इंजेक्शन)</td>
+            <td>{% if qa.get('q14c_injected_narcotics', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>14D.</strong> Sexual partner belongs to any above high-risk categories? (जोडीदार उच्च-जोखीम श्रेणीत)</td>
+            <td>{% if qa.get('q14d_partner_risk', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 10: RECENT SYMPTOMS HISTORY (Q15)                          -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="sub-section-header">15. Recent Symptoms History (गेल्या काही दिवसांतील लक्षणे)</div>
+      <table class="print-table">
+        <tbody>
+          <tr>
+            <td width="50%"><strong>15A.</strong> Night Sweats (रात्री घाम): {% if qa.get('q15a_night_sweats', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td width="50%"><strong>15B.</strong> Persistent Fever (सतत ताप): {% if qa.get('q15b_persistent_fever', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>15C.</strong> Swollen Glands (ग्रंथींना सूज): {% if qa.get('q15c_swollen_glands', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>15D.</strong> Persistent Diarrhoea (सतत जुलाब): {% if qa.get('q15d_persistent_diarrhea', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td colspan="2"><strong>15E.</strong> Unexplained Weight Loss (कारण नसताना वजन कमी होणे): {% if qa.get('q15e_weight_loss', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 11: FOR FEMALE DONORS (Q16)                                -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="sub-section-header">16. For Female Donors (महिला रक्तदात्यांसाठी विशेष प्रश्न)</div>
+      <table class="print-table">
+        <tbody>
+          <tr>
+            <td width="50%"><strong>16A.</strong> Abortion in last 6 months (गर्भपात): {% if qa.get('q16a_female_abortion', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td width="50%"><strong>16B.</strong> Pregnant currently (गरोदर): {% if qa.get('q16b_female_pregnant', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>16C.</strong> Delivery in last 12 months (प्रसूती): {% if qa.get('q16c_female_delivery', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>16D.</strong> Breastfeeding baby (स्तनपान): {% if qa.get('q16d_female_breastfeeding', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>16E.</strong> Periods today (मासिक पाळी): {% if qa.get('q16e_female_periods', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>16F.</strong> Medication for PCOD (पीसीओडी): {% if qa.get('q16f_female_pcod', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 12: NEXT 24 HOURS HIGH-RISK OCCUPATION (Q17)               -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="sub-section-header">17. Next 24 Hours High-Risk Occupation / Duty (पुढील २४ तासांत जोखीमीची कामे)</div>
+      <table class="print-table">
+        <tbody>
+          <tr>
+            <td width="50%"><strong>17A.</strong> Role as Air Crew member (विमान चालक/कर्मचारी): {% if qa.get('q17a_air_crew', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td width="50%"><strong>17B.</strong> Long distance vehicle driver (लांब पल्ल्याचा चालक): {% if qa.get('q17b_long_driver', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>17C.</strong> Strenuous work required (अतिश्रम): {% if qa.get('q17c_strenuous_work', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>17D.</strong> Emergency Service - Fire/Ambulance (आणीबाणी सेवा): {% if qa.get('q17d_emergency_service', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>17E.</strong> Altitude flying / deep sea diving (उंचावरचे उड्डाण/समुद्र): {% if qa.get('q17e_altitude_diving', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+            <td><strong>17F.</strong> Performed above in last 12h (गेल्या १२ तासांत): {% if qa.get('q17f_past_12h_duties', 'No') == 'Yes' %}<span class="badge-yes">Yes</span>{% else %}<span class="badge-no">No</span>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 13: DONOR CONSENT (Page 4/4)                               -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="donor-consent-block" style="margin-top:10px;">
+        <div style="font-weight:bold; font-size:10pt; color:#1E3A8A; margin-bottom:6px; border-bottom:1px solid #CBD5E1; padding-bottom:4px;">
+          DONOR CONSENT (मान्यतापत्र - QF/JKRP/18 Page 4/4)
+        </div>
+        <p style="margin-bottom:4px;">1) <strong>Voluntary Act & Risk Awareness:</strong> I understand that blood donation is voluntary without inducement or remuneration. I am aware of medical screening procedures and voluntarily willing to donate blood. My blood will be tested for Hepatitis B/C, HIV/AIDS, Malaria, and Syphilis.</p>
+        <p style="margin-bottom:4px;">2) <strong>Component Utilization:</strong> I hereby give consent to utilize my plasma component for fractionation and blood/components for patients or other blood storage centres.</p>
+        <p style="margin-bottom:4px;">3) <strong>Truthful Declaration:</strong> I have read and understood all information presented and answered all questions truthfully. Any incorrect statement or concealment may affect my health or harm the recipient.</p>
+        <p style="margin-bottom:4px;">4) <strong>Confidentiality:</strong> I prohibit any information about test results to be disclosed to any individual or government agency without my prior permission.</p>
+        <p style="margin-bottom:6px;">5) <strong>Notification Preference:</strong> Would you like to be informed about any abnormal test result? <strong>{{ 'Yes (होय)' if consent.abnormal_results_notify else 'No (नाही)' }}</strong></p>
+        
+        <div style="margin-top:10px; text-align:right;">
+          <div style="display:inline-block; border-bottom:1px solid #000; width:180px; text-align:center; min-height:40px;">
             {% if consent.donor_signature_data %}
               <img src="{{ consent.donor_signature_data }}" class="printed-signature-img" alt="Donor Signature">
             {% else %}
-              <em style="font-size:8pt; color:#64748B;">Signed Digitally</em>
+              <em style="font-size:8.5pt; color:#64748B;">Signed Digitally</em>
             {% endif %}
           </div>
-          <br><strong style="font-size:8.5pt;">Signature of Donor (रक्तदात्याची स्वाक्षरी)</strong>
+          <br><strong style="font-size:9pt; color:#0F172A;">Signature of Donor (रक्तदात्याची स्वाक्षरी)</strong>
         </div>
       </div>
 
-      <!-- 7. MEDICAL OFFICER VERIFICATION & SIGNATURE -->
-      <div class="print-section-header">6. MEDICAL OFFICER VERIFICATION & ELECTRONIC SIGNATURE</div>
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 14: MEDICAL OFFICER VERIFICATION & ELECTRONIC SIGNATURE    -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="section-header">7. MEDICAL OFFICER VERIFICATION & ELECTRONIC SIGNATURE</div>
       <table class="print-table" style="margin-bottom:0;">
         <tr>
           <td width="65%">

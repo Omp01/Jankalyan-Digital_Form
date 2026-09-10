@@ -31,12 +31,16 @@ function initSignaturePad() {
 
   // Donor Consent Canvas
   donorCanvas = document.getElementById('donorSignatureCanvas');
+  window.donorCanvas = donorCanvas;
   if (donorCanvas) {
     donorCtx = donorCanvas.getContext('2d');
     resizeCanvas(donorCanvas, donorCtx);
 
     donorCanvas.addEventListener('pointerdown', (e) => startDrawing(e, donorCtx));
-    donorCanvas.addEventListener('pointermove', (e) => draw(e, donorCtx, (val) => hasDonorSignature = val));
+    donorCanvas.addEventListener('pointermove', (e) => draw(e, donorCtx, (val) => {
+      hasDonorSignature = val;
+      window.hasDonorSignature = val;
+    }));
     donorCanvas.addEventListener('pointerup', stopDrawing);
     donorCanvas.addEventListener('pointercancel', stopDrawing);
     donorCanvas.addEventListener('mouseleave', stopDrawing);
@@ -112,6 +116,8 @@ function clearDonorSignature() {
   const rect = donorCanvas.getBoundingClientRect();
   donorCtx.clearRect(0, 0, rect.width, rect.height);
   hasDonorSignature = false;
+  window.hasDonorSignature = false;
+  window.loadedDonorSignature = null;
 }
 
 function toggleMoSigMode(mode) {
@@ -152,17 +158,9 @@ async function confirmAndFinaliseRecord() {
     return;
   }
 
-  // Get Donor Consent Signature if drawn
-  let donorSigData = hasDonorSignature && donorCanvas ? donorCanvas.toDataURL('image/png') : '';
-  
-  // Attach donor signature to consent before final saving
-  const payloadData = getFormData();
-  payloadData.consent.donor_signature_data = donorSigData;
-
-  if (!currentRecordId) {
-    const saved = await saveRecord(true);
-    if (!saved) return;
-  }
+  // Save record data first (including donor consent signature)
+  const saved = await saveRecord(false);
+  if (!saved) return;
 
   const medicalNotes = document.getElementById('medical_notes')?.value || '';
 

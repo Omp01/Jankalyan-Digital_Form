@@ -61,6 +61,11 @@ class BloodBankSystemTestCase(unittest.TestCase):
             'blood_bag_number': 'BAG-2026-TEST01',
             'bag_type': 'Single',
             'volume_ml': 350
+          },
+          'consent': {
+            'consent_given': True,
+            'abnormal_results_notify': True,
+            'donor_signature_data': "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
           }
         }
         res = self.client.post('/api/records', json=payload)
@@ -88,6 +93,7 @@ class BloodBankSystemTestCase(unittest.TestCase):
         rec_data = res_rec.get_json()
         self.assertEqual(rec_data['record']['status'], 'SIGNED')
         self.assertIsNotNone(rec_data['signature']['signature_data'])
+        self.assertIsNotNone(rec_data['consent']['donor_signature_data'])
 
     def test_04_excel_export(self):
         self.client.post('/api/auth/login', json={'username': 'admin', 'password': 'Admin@123'})
@@ -100,6 +106,63 @@ class BloodBankSystemTestCase(unittest.TestCase):
         res = self.client.get('/print/1')
         self.assertEqual(res.status_code, 200)
         self.assertIn(b'JANKALYAN BLOOD CENTRE', res.data)
+
+    def test_06_admin_user_management(self):
+        # 1. Login as Admin
+        self.client.post('/api/auth/login', json={'username': 'admin', 'password': 'Admin@123'})
+        with flask_app.app.app_context():
+            flask_app.execute_db("DELETE FROM users WHERE username LIKE 'temp_user%'")
+
+        # 2. Create User
+        res_create = self.client.post('/api/users', json={
+            'username': 'temp_user_test',
+            'password': 'TempPassword@123',
+            'full_name': 'Temp Test User',
+            'role': 'STAFF',
+            'medical_reg_no': 'TEMP-101'
+        })
+        data_create = res_create.get_json()
+        self.assertTrue(data_create['success'])
+        temp_user_id = data_create['user_id']
+
+        # 3. Update User (Name & Password)
+        res_update = self.client.put(f'/api/users/{temp_user_id}', json={
+            'username': 'temp_user_updated',
+            'full_name': 'Updated Temp Name',
+            'role': 'MEDICAL_OFFICER',
+            'medical_reg_no': 'MO-TEMP-999',
+            'password': 'NewPassword@456'
+        })
+        self.assertTrue(res_update.get_json()['success'])
+
+        # 4. Verify login with new password works
+        res_login_new = self.client.post('/api/auth/login', json={
+            'username': 'temp_user_updated',
+            'password': 'NewPassword@456'
+        })
+        self.assertTrue(res_login_new.get_json()['success'])
+
+        # 5. Switch back to Admin
+        self.client.post('/api/auth/login', json={'username': 'admin', 'password': 'Admin@123'})
+
+        # 6. Attempt to delete primary Admin account -> expect HTTP 400 error
+        res_del_admin = self.client.delete('/api/users/1')
+        self.assertEqual(res_del_admin.status_code, 400)
+        self.assertIn('cannot be soft-deleted', res_del_admin.get_json()['message'])
+
+        # 7. Delete temporary user -> expect success
+        res_del_temp = self.client.delete(f'/api/users/{temp_user_id}')
+        self.assertTrue(res_del_temp.get_json()['success'])
+
+    def test_07_rbac_user_management(self):
+        # Login as Staff
+        self.client.post('/api/auth/login', json={'username': 'staff', 'password': 'Staff@123'})
+
+        # Verify access is denied (403) for non-admin
+        self.assertEqual(self.client.get('/api/users').status_code, 403)
+        self.assertEqual(self.client.post('/api/users', json={'username': 'x', 'password': 'y', 'full_name': 'z'}).status_code, 403)
+        self.assertEqual(self.client.put('/api/users/1', json={'username': 'admin'}).status_code, 403)
+        self.assertEqual(self.client.delete('/api/users/1').status_code, 403)
 
 if __name__ == '__main__':
     unittest.main()

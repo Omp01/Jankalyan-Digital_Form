@@ -15,12 +15,16 @@ def init_db():
         schema_sql = f.read()
     cursor.executescript(schema_sql)
 
-    # Migration check for signature_data column in users table
+    # Migration check for signature_data and is_active columns in users table
     cursor.execute("PRAGMA table_info(users)")
     cols = [column[1] for column in cursor.fetchall()]
     if 'signature_data' not in cols:
         print("Migrating users table: adding signature_data column...")
         cursor.execute("ALTER TABLE users ADD COLUMN signature_data TEXT")
+    if 'is_active' not in cols:
+        print("Migrating users table: adding is_active column...")
+        cursor.execute("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1")
+        cursor.execute("UPDATE users SET is_active = 1 WHERE is_active IS NULL")
 
     # Seed Default Users if empty
     cursor.execute("SELECT COUNT(*) FROM users")

@@ -125,8 +125,8 @@ function goToStep(step) {
 }
 
 function getFormData() {
-  const getRadioVal = (name) => {
-    const elem = document.querySelector(`input[name="${name}"]:checked`);
+  const getSelectVal = (name) => {
+    const elem = document.querySelector(`select[name="${name}"]`);
     return elem ? elem.value : 'No';
   };
 
@@ -136,29 +136,66 @@ function getFormData() {
   });
 
   const quest = {
-    med_daily_thyroid: getRadioVal('med_daily_thyroid'),
-    med_3days_aspirin: getRadioVal('med_3days_aspirin'),
-    med_7days_antifungals: getRadioVal('med_7days_antifungals'),
-    med_2weeks_antibiotics: getRadioVal('med_2weeks_antibiotics'),
-    med_28days_vaccines: getRadioVal('med_28days_vaccines'),
-    med_1month_acne_prostate: getRadioVal('med_1month_acne_prostate'),
-    med_3months_malaria: getRadioVal('med_3months_malaria'),
-    med_6months_radioactive: getRadioVal('med_6months_radioactive'),
-    med_1year_rabies_tattoo: getRadioVal('med_1year_rabies_tattoo'),
-    med_2years_tb: getRadioVal('med_2years_tb'),
-    dental_48h: getRadioVal('dental_48h'),
-    dental_root_canal_14d: getRadioVal('dental_root_canal_14d'),
-    dental_graft_12m: getRadioVal('dental_graft_12m'),
-    endoscopy_7d: getRadioVal('endoscopy_7d'),
-    past_donation_complications: getRadioVal('past_donation_complications'),
-    symptoms_fever_sweats: getRadioVal('symptoms_fever_sweats'),
-    symptoms_weight_loss: getRadioVal('symptoms_weight_loss'),
-    female_abortion_6m: getRadioVal('female_abortion_6m'),
-    female_pregnant: getRadioVal('female_pregnant'),
-    female_breastfeeding: getRadioVal('female_breastfeeding'),
-    female_menstruating: getRadioVal('female_menstruating'),
-    next24h_flight_driver: getRadioVal('next24h_flight_driver'),
-    next24h_emergency_service: getRadioVal('next24h_emergency_service')
+    // Page 1 Questions 1 to 10
+    q1_age_18_65: getSelectVal('q1_age_18_65'),
+    q2_meals_4h: getSelectVal('q2_meals_4h'),
+    q3a_slept_well: getSelectVal('q3a_slept_well'),
+    q3b_night_shift_sleep: getSelectVal('q3b_night_shift_sleep'),
+    q4_heavy_work_12h: getSelectVal('q4_heavy_work_12h'),
+    q5_malaise_weakness: getSelectVal('q5_malaise_weakness'),
+    q6_cough_cold_mood: getSelectVal('q6_cough_cold_mood'),
+    q7_alcohol_24h: getSelectVal('q7_alcohol_24h'),
+    q8_loose_motions_15d: getSelectVal('q8_loose_motions_15d'),
+    q9_migraine_weekly: getSelectVal('q9_migraine_weekly'),
+    q10_daily_meds: getSelectVal('q10_daily_meds'),
+
+    // Page 2 & 3 Questions (11 to 17)
+    q11a_endoscopy_sampling: getSelectVal('q11a_endoscopy_sampling'),
+    q11b_endoscopy_malignant: getSelectVal('q11b_endoscopy_malignant'),
+    q11b_endoscopy_benign: getSelectVal('q11b_endoscopy_benign'),
+    q11c_endoscopy_other: getSelectVal('q11c_endoscopy_other'),
+
+    q12a_male_3months: getSelectVal('q12a_male_3months'),
+    q12b_female_4months: getSelectVal('q12b_female_4months'),
+    q12c_donation_trouble: getSelectVal('q12c_donation_trouble'),
+    q12d_platelets_28days: getSelectVal('q12d_platelets_28days'),
+
+    q14a_hiv_diagnosis: getSelectVal('q14a_hiv_diagnosis'),
+    q14b_unsafe_sex: getSelectVal('q14b_unsafe_sex'),
+    q14c_injected_narcotics: getSelectVal('q14c_injected_narcotics'),
+    q14d_partner_risk: getSelectVal('q14d_partner_risk'),
+
+    q15a_night_sweats: getSelectVal('q15a_night_sweats'),
+    q15b_persistent_fever: getSelectVal('q15b_persistent_fever'),
+    q15c_swollen_glands: getSelectVal('q15c_swollen_glands'),
+    q15d_persistent_diarrhea: getSelectVal('q15d_persistent_diarrhea'),
+    q15e_weight_loss: getSelectVal('q15e_weight_loss'),
+
+    q16a_female_abortion: getSelectVal('q16a_female_abortion'),
+    q16b_female_pregnant: getSelectVal('q16b_female_pregnant'),
+    q16c_female_delivery: getSelectVal('q16c_female_delivery'),
+    q16d_female_breastfeeding: getSelectVal('q16d_female_breastfeeding'),
+    q16e_female_periods: getSelectVal('q16e_female_periods'),
+    q16f_female_pcod: getSelectVal('q16f_female_pcod'),
+
+    q17a_air_crew: getSelectVal('q17a_air_crew'),
+    q17b_long_driver: getSelectVal('q17b_long_driver'),
+    q17c_strenuous_work: getSelectVal('q17c_strenuous_work'),
+    q17d_emergency_service: getSelectVal('q17d_emergency_service'),
+    q17e_altitude_diving: getSelectVal('q17e_altitude_diving'),
+    q17f_past_12h_duties: getSelectVal('q17f_past_12h_duties'),
+
+    // Medication history
+    med_daily_thyroid: getSelectVal('med_daily_thyroid'),
+    med_3days_aspirin: getSelectVal('med_3days_aspirin'),
+    med_7days_antifungals: getSelectVal('med_7days_antifungals'),
+    med_2weeks_antibiotics: getSelectVal('med_2weeks_antibiotics'),
+    med_28days_vaccines: getSelectVal('med_28days_vaccines'),
+    med_1month_acne_prostate: getSelectVal('med_1month_acne_prostate'),
+    med_3months_malaria: getSelectVal('med_3months_malaria'),
+    med_6months_radioactive: getSelectVal('med_6months_radioactive'),
+    med_1year_rabies_tattoo: getSelectVal('med_1year_rabies_tattoo'),
+    med_2years_tb: getSelectVal('med_2years_tb')
   };
 
   return {
@@ -200,14 +237,32 @@ function getFormData() {
     questionnaire_answers: quest,
     consent: {
       consent_given: document.getElementById('consent_given')?.checked ?? true,
-      abnormal_results_notify: document.getElementById('abnormal_results_notify')?.checked ?? true
+      abnormal_results_notify: document.getElementById('abnormal_results_notify')?.checked ?? true,
+      donor_signature_data: (() => {
+        const dCanvas = document.getElementById('donorSignatureCanvas');
+        if (window.hasDonorSignature && dCanvas) {
+          return dCanvas.toDataURL('image/png');
+        }
+        if (window.loadedDonorSignature) {
+          return window.loadedDonorSignature;
+        }
+        if (dCanvas) {
+          const dataUrl = dCanvas.toDataURL('image/png');
+          if (dataUrl && dataUrl.length > 1000) return dataUrl;
+        }
+        return '';
+      })()
     },
     donation_details: {
       blood_bag_number: document.getElementById('blood_bag_number')?.value || '',
       bag_type: document.getElementById('bag_type')?.value || 'Single',
       anticoagulant: document.getElementById('anticoagulant')?.value || 'CPDA-1',
       volume_ml: parseInt(document.getElementById('volume_ml')?.value || 350),
+      bag_manufacturer: document.getElementById('bag_manufacturer')?.value || 'FK',
+      batch_number: document.getElementById('batch_number')?.value || '',
       segment_number: document.getElementById('segment_number')?.value || '',
+      counselor_name: document.getElementById('counselor_name')?.value || '',
+      collection_duration: document.getElementById('collection_duration')?.value || '10',
       phlebotomy_site: document.getElementById('phlebotomy_site')?.value || 'Right Arm',
       phlebotomist_staff_id: document.getElementById('phlebotomist_staff_id')?.value || '',
       donation_status: document.getElementById('donation_status')?.value || 'SUCCESSFUL',
@@ -331,6 +386,25 @@ async function loadRecordData(recordId) {
       });
     }
 
+    if (consent) {
+      if (document.getElementById('consent_given')) document.getElementById('consent_given').checked = consent.consent_given !== false;
+      if (document.getElementById('abnormal_results_notify')) document.getElementById('abnormal_results_notify').checked = consent.abnormal_results_notify !== false;
+
+      if (consent.donor_signature_data) {
+        window.loadedDonorSignature = consent.donor_signature_data;
+        const dCanvas = document.getElementById('donorSignatureCanvas');
+        if (dCanvas) {
+          const dCtx = dCanvas.getContext('2d');
+          const img = new Image();
+          img.onload = () => {
+            dCtx.clearRect(0, 0, dCanvas.width, dCanvas.height);
+            dCtx.drawImage(img, 0, 0, dCanvas.width, dCanvas.height);
+          };
+          img.src = consent.donor_signature_data;
+        }
+      }
+    }
+
     validateMedicalEligibility();
   } catch (err) {
     console.error('Error loading record:', err);
@@ -355,6 +429,11 @@ function renderReviewSummary() {
       <hr>
       <h4>🩸 Blood Bag Details:</h4>
       <p><strong>Bag No:</strong> ${data.donation_details.blood_bag_number || 'N/A'} | <strong>Type:</strong> ${data.donation_details.bag_type} | <strong>Volume:</strong> ${data.donation_details.volume_ml} mL</p>
+      ${data.consent && data.consent.donor_signature_data ? `
+        <hr>
+        <h4>✍️ Donor Signature:</h4>
+        <img src="${data.consent.donor_signature_data}" style="max-height:80px; border:1px solid #CBD5E1; padding:4px; background:#fff; border-radius:4px;" alt="Donor Signature">
+      ` : ''}
     </div>
   `;
 }

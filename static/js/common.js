@@ -70,11 +70,16 @@ function renderUserHeader() {
   headerContainer.innerHTML = `
     <div class="header-banner">
       <div class="header-brand">
-        <div class="hospital-logo">🩸</div>
-        <div>
-          <h1 class="header-title" data-i18n="system_title">Jankalyan Blood Centre</h1>
-          <p class="header-subtitle" data-i18n="system_subtitle">Blood Bank Digital Form System (QF/JKRP/18)</p>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="hospital-logo">🩸</div>
+          <div>
+            <h1 class="header-title" data-i18n="system_title">Jankalyan Blood Centre</h1>
+            <p class="header-subtitle" data-i18n="system_subtitle">Blood Bank Digital Form System (QF/JKRP/18)</p>
+          </div>
         </div>
+        <button class="mobile-nav-toggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">
+          ☰
+        </button>
       </div>
       <div class="header-actions">
         <div class="lang-switch-box">
@@ -87,7 +92,7 @@ function renderUserHeader() {
         </div>
       </div>
     </div>
-    <nav class="nav-bar">
+    <nav class="nav-bar" id="mainNavBar">
       <a href="/dashboard.html" class="nav-link ${window.location.pathname.includes('dashboard') ? 'active' : ''}">📊 <span data-i18n="nav_dashboard">Dashboard</span></a>
       <a href="/donor_form.html" class="nav-link ${window.location.pathname.includes('donor_form') ? 'active' : ''}">📝 <span data-i18n="nav_new_form">New Donor Form</span></a>
       <a href="/records.html" class="nav-link ${window.location.pathname.includes('records') ? 'active' : ''}">🔍 <span data-i18n="nav_records">Search Records</span></a>
@@ -99,6 +104,13 @@ function renderUserHeader() {
     </nav>
   `;
   applyTranslations();
+}
+
+function toggleMobileMenu() {
+  const navBar = document.getElementById('mainNavBar');
+  if (navBar) {
+    navBar.classList.toggle('open');
+  }
 }
 
 function renderFooter() {

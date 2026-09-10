@@ -6,6 +6,86 @@
   <title>Manage Users - Jankalyan Blood Bank Digital Form System</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/form.css">
+  <style>
+    .hidden { display: none !important; }
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-card {
+      background: #FFFFFF;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 520px;
+      padding: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      border: 1px solid #E2E8F0;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .btn-action-edit {
+      background: #3B82F6;
+      color: #FFFFFF;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-action-edit:hover { background: #2563EB; }
+    .btn-action-key {
+      background: #8B5CF6;
+      color: #FFFFFF;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-action-key:hover { background: #7C3AED; }
+    .btn-action-del {
+      background: #EF4444;
+      color: #FFFFFF;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-action-del:hover { background: #DC2626; }
+    .btn-action-reactivate {
+      background: #059669;
+      color: #FFFFFF;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-action-reactivate:hover { background: #047857; }
+    .badge-protected {
+      background: #F1F5F9;
+      color: #475569;
+      border: 1px solid #CBD5E1;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -16,8 +96,9 @@
         <span>👥 User Management (ADMIN ONLY)</span>
       </div>
 
-      <form id="createUserForm" onsubmit="handleCreateUser(event)" style="background:#F8FAFC; padding:16px; border-radius:8px; border:1px solid #CBD5E1; margin-bottom:20px;">
-        <h4 style="margin-bottom:12px;">+ Create New System User</h4>
+      <!-- Create New User Form -->
+      <form id="createUserForm" onsubmit="handleCreateUser(event)" style="background:#F8FAFC; padding:18px; border-radius:8px; border:1px solid #CBD5E1; margin-bottom:24px;">
+        <h4 style="margin-bottom:12px; color:var(--primary); font-weight:700;">+ Create New System User</h4>
         <div class="form-grid">
           <div class="form-group">
             <label>Username *</label>
@@ -41,39 +122,99 @@
           </div>
           <div class="form-group">
             <label>Medical Reg. No (for MO)</label>
-            <input type="text" id="newRegNo" class="form-control" placeholder="MMC Reg No">
+            <input type="text" id="newRegNo" class="form-control" placeholder="e.g. MMC-2024-88990">
           </div>
         </div>
-        <button type="submit" class="btn btn-primary">Create User ➕</button>
+        <button type="submit" class="btn btn-primary" style="margin-top:8px;">Create User ➕</button>
       </form>
 
-      <h4 style="margin-bottom:12px;">Existing System Users</h4>
+      <h4 style="margin-bottom:14px; font-weight:700; color:var(--primary);">Existing System Users</h4>
       <div style="overflow-x: auto;">
         <table class="table-questionnaire">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Username</th>
-              <th>Full Name</th>
-              <th>Role</th>
-              <th>Medical Reg No</th>
-              <th>Created At</th>
+              <th width="4%">ID</th>
+              <th width="14%">Username</th>
+              <th width="20%">Full Name</th>
+              <th width="14%">Role</th>
+              <th width="14%">Medical Reg No</th>
+              <th width="11%">Status</th>
+              <th width="11%">Created At</th>
+              <th width="12%" class="text-center">Actions</th>
             </tr>
           </thead>
           <tbody id="usersTableBody">
-            <tr><td colspan="6" class="text-center">Loading users...</td></tr>
+            <tr><td colspan="8" class="text-center">Loading system users...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
+  <!-- Edit User Modal -->
+  <div id="editModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <h3 style="margin-bottom:16px; color:var(--primary); font-size:1.15rem;" data-i18n="title_edit_user">Edit System User Credentials</h3>
+      <form id="editUserForm" onsubmit="handleSaveEditUser(event)">
+        <input type="hidden" id="editUserId">
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Username *</label>
+          <input type="text" id="editUsername" class="form-control" required>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Full Name *</label>
+          <input type="text" id="editFullName" class="form-control" required>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Role *</label>
+          <select id="editRole" class="form-control" required>
+            <option value="STAFF">Blood Bank Staff</option>
+            <option value="MEDICAL_OFFICER">Medical Officer</option>
+            <option value="ADMIN">Administrator</option>
+          </select>
+          <small id="roleNotice" class="text-muted hidden" style="color:#D97706 !important; font-size:0.78rem;">Primary Admin role cannot be demoted.</small>
+        </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label>Medical Registration No.</label>
+          <input type="text" id="editRegNo" class="form-control" placeholder="MMC Reg No">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()" data-i18n="btn_cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes 💾</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="passwordModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <h3 style="margin-bottom:12px; color:var(--primary); font-size:1.15rem;" data-i18n="title_change_password">Change User Password</h3>
+      <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">
+        Setting new login password for user: <strong id="pwdTargetUser" style="color:#1E3A8A;">-</strong>
+      </p>
+      <form id="changePasswordForm" onsubmit="handleSavePassword(event)">
+        <input type="hidden" id="pwdUserId">
+        <div class="form-group" style="margin-bottom:20px;">
+          <label>New Password *</label>
+          <input type="password" id="newAccountPassword" class="form-control" required minlength="4" placeholder="Enter new password">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-secondary" onclick="closePasswordModal()" data-i18n="btn_cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:#8B5CF6; border-color:#7C3AED;">Update & Save Password 🔑</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="/js/language.js"></script>
   <script src="/js/common.js"></script>
   <script>
+    let usersList = [];
+
     document.addEventListener('DOMContentLoaded', async () => {
       await checkAuth();
-      if (currentUser.role !== 'ADMIN') {
+      if (!currentUser || currentUser.role !== 'ADMIN') {
         alert('Access denied. Admin role required.');
         window.location.href = '/dashboard.html';
         return;
@@ -86,21 +227,64 @@
         const res = await fetch('/api/users');
         const data = await res.json();
         if (data.success) {
-          const tbody = document.getElementById('usersTableBody');
-          tbody.innerHTML = data.users.map(u => `
-            <tr>
-              <td>${u.id}</td>
-              <td><strong>${u.username}</strong></td>
-              <td>${u.full_name}</td>
-              <td><span class="badge badge-submitted">${u.role}</span></td>
-              <td>${u.medical_reg_no || '-'}</td>
-              <td>${formatDate(u.created_at)}</td>
-            </tr>
-          `).join('');
+          usersList = data.users;
+          renderUsersTable(usersList);
         }
       } catch (err) {
-        console.error(err);
+        console.error('Error loading users:', err);
       }
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('usersTableBody');
+      if (!tbody) return;
+
+      if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center">No system users found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const isRootAdmin = (u.username === 'admin' || u.id === 1);
+        const isSelf = (currentUser && currentUser.id === u.id);
+        const isActive = (u.is_active !== 0);
+
+        const statusBadge = isActive 
+          ? `<span class="badge" style="background:#DCFCE7; color:#166534; border:1px solid #BBF7D0;">ACTIVE</span>`
+          : `<span class="badge" style="background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5;">DEACTIVATED</span>`;
+
+        let deleteBtnHtml = '';
+        if (isRootAdmin) {
+          deleteBtnHtml = `<span class="badge-protected" title="Primary Administrator account cannot be deleted">🔒 Protected</span>`;
+        } else if (!isActive) {
+          deleteBtnHtml = `<button class="btn-action-reactivate" onclick="handleReactivateUser(${u.id}, '${u.username}')" title="Reactivate User">🔄 Reactivate</button>`;
+        } else if (isSelf) {
+          deleteBtnHtml = `<span class="badge-protected" style="background:#FFFBEB; color:#B45309; border-color:#FCD34D;" title="Active session account">Self</span>`;
+        } else {
+          deleteBtnHtml = `<button class="btn-action-del" onclick="handleDeleteUser(${u.id}, '${u.username}')" title="Soft Delete / Deactivate User">🗑️ Soft Delete</button>`;
+        }
+
+        return `
+          <tr style="${!isActive ? 'opacity:0.65; background:#F8FAFC;' : ''}">
+            <td>${u.id}</td>
+            <td><strong>${u.username}</strong></td>
+            <td>${u.full_name}</td>
+            <td><span class="badge badge-submitted">${u.role}</span></td>
+            <td>${u.medical_reg_no || '-'}</td>
+            <td>${statusBadge}</td>
+            <td>${formatDate(u.created_at)}</td>
+            <td class="text-center">
+              <div style="display:flex; justify-content:center; gap:6px; align-items:center;">
+                <button class="btn-action-edit" onclick="openEditModal(${u.id})" title="Edit Credentials">✏️</button>
+                <button class="btn-action-key" onclick="openPasswordModal(${u.id})" title="Change Password">🔑</button>
+                ${deleteBtnHtml}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      applyTranslations();
     }
 
     async function handleCreateUser(e) {
@@ -127,6 +311,141 @@
         }
       } catch (err) {
         showToast('Failed to create user', 'error');
+      }
+    }
+
+    function openEditModal(userId) {
+      const u = usersList.find(x => x.id === userId);
+      if (!u) return;
+
+      document.getElementById('editUserId').value = u.id;
+      document.getElementById('editUsername').value = u.username;
+      document.getElementById('editFullName').value = u.full_name;
+      document.getElementById('editRole').value = u.role;
+      document.getElementById('editRegNo').value = u.medical_reg_no || '';
+
+      const roleNotice = document.getElementById('roleNotice');
+      const editRoleSelect = document.getElementById('editRole');
+      if (u.username === 'admin') {
+        editRoleSelect.disabled = true;
+        roleNotice.classList.remove('hidden');
+      } else {
+        editRoleSelect.disabled = false;
+        roleNotice.classList.add('hidden');
+      }
+
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+      document.getElementById('editUserForm').reset();
+    }
+
+    async function handleSaveEditUser(e) {
+      e.preventDefault();
+      const userId = document.getElementById('editUserId').value;
+      const username = document.getElementById('editUsername').value.trim();
+      const full_name = document.getElementById('editFullName').value.trim();
+      const role = document.getElementById('editRole').value;
+      const medical_reg_no = document.getElementById('editRegNo').value.trim();
+
+      try {
+        const res = await fetch(`/api/users/${userId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, full_name, role, medical_reg_no })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          closeEditModal();
+          loadUsers();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Failed to update user', 'error');
+      }
+    }
+
+    function openPasswordModal(userId) {
+      const u = usersList.find(x => x.id === userId);
+      if (!u) return;
+
+      document.getElementById('pwdUserId').value = u.id;
+      document.getElementById('pwdTargetUser').innerText = `${u.username} (${u.full_name})`;
+      document.getElementById('newAccountPassword').value = '';
+      document.getElementById('passwordModal').classList.remove('hidden');
+    }
+
+    function closePasswordModal() {
+      document.getElementById('passwordModal').classList.add('hidden');
+      document.getElementById('changePasswordForm').reset();
+    }
+
+    async function handleSavePassword(e) {
+      e.preventDefault();
+      const userId = document.getElementById('pwdUserId').value;
+      const newPassword = document.getElementById('newAccountPassword').value.trim();
+      if (!newPassword) {
+        showToast('Please enter a valid password', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/users/${userId}/password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: newPassword })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || 'Password updated successfully!', 'success');
+          closePasswordModal();
+        } else {
+          showToast(data.message || 'Failed to update password', 'error');
+        }
+      } catch (err) {
+        showToast('Failed to update password', 'error');
+      }
+    }
+
+    async function handleDeleteUser(userId, username) {
+      if (!confirm(`Are you sure you want to deactivate (soft delete) system user "${username}"?\n\nThe user account will be deactivated and blocked from logging in, while preserving all audit log and historical data.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          loadUsers();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Failed to deactivate user', 'error');
+      }
+    }
+
+    async function handleReactivateUser(userId, username) {
+      if (!confirm(`Are you sure you want to reactivate user "${username}"?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/users/${userId}/reactivate`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          loadUsers();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Failed to reactivate user', 'error');
       }
     }
   </script>
