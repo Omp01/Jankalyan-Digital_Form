@@ -6,9 +6,13 @@ let currentStep = 1;
 let currentRecordId = null;
 let isRecordLocked = false;
 
+let isDraftRestored = false;
+let isSubmittedOrSaved = false;
+
 document.addEventListener('DOMContentLoaded', () => {
   initFormEvents();
   checkEditRecordMode();
+  setupAutoSaveListeners();
 });
 
 function checkEditRecordMode() {
@@ -21,6 +25,7 @@ function checkEditRecordMode() {
     const today = new Date().toISOString().split('T')[0];
     const dateElem = document.getElementById('donation_date');
     if (dateElem) dateElem.value = today;
+    checkLocalDraft();
   }
 }
 
@@ -292,6 +297,8 @@ async function saveRecord(asDraft = true) {
     const result = await res.json();
     if (result.success) {
       currentRecordId = result.record_id;
+      isSubmittedOrSaved = true;
+      discardDraftData();
       showToast(result.message, 'success');
       if (asDraft) {
         document.getElementById('recNumDisplay').innerText = result.record_number;
@@ -453,3 +460,149 @@ function renderReviewSummary() {
     </div>
   `;
 }
+
+/* ==================== DRAFT AUTO-SAVE & RECOVERY LOGIC ==================== */
+let autoSaveTimeout = null;
+
+function setupAutoSaveListeners() {
+  const form = document.getElementById('donorForm');
+  if (!form) return;
+
+  form.addEventListener('input', () => {
+    scheduleAutoSave();
+  });
+
+  form.addEventListener('change', () => {
+    scheduleAutoSave();
+  });
+
+  window.addEventListener('beforeunload', (e) => {
+    if (isSubmittedOrSaved) return;
+    const data = getFormData();
+    if (hasMeaningfulDraftData(data)) {
+      saveLocalDraft(data);
+      e.preventDefault();
+      e.returnValue = 'You have unsaved form entries. Save as draft before leaving?';
+      return e.returnValue;
+    }
+  });
+}
+
+function scheduleAutoSave() {
+  if (isRecordLocked || currentRecordId) return; // Only auto-save local draft for new unsaved forms
+  if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+  autoSaveTimeout = setTimeout(() => {
+    const data = getFormData();
+    if (hasMeaningfulDraftData(data)) {
+      saveLocalDraft(data);
+    }
+  }, 1000);
+}
+
+function hasMeaningfulDraftData(data) {
+  if (!data || !data.donor) return false;
+  const d = data.donor;
+  return Boolean(d.full_name?.trim() || d.mobile_number?.trim() || d.donor_number?.trim() || d.residential_address?.trim());
+}
+
+function saveLocalDraft(data) {
+  try {
+    const draftPayload = {
+      timestamp: new Date().toLocaleString(),
+      isoDate: new Date().toISOString(),
+      formData: data || getFormData()
+    };
+    localStorage.setItem('jankalyan_form_draft', JSON.stringify(draftPayload));
+  } catch (err) {
+    console.warn('Failed to save local draft to localStorage:', err);
+  }
+}
+
+function checkLocalDraft() {
+  try {
+    const draftStr = localStorage.getItem('jankalyan_form_draft');
+    if (!draftStr) return;
+
+    const draft = JSON.parse(draftStr);
+    if (draft && draft.formData && hasMeaningfulDraftData(draft.formData)) {
+      const banner = document.getElementById('draftBanner');
+      const timeElem = document.getElementById('draftTimestamp');
+      if (banner && timeElem) {
+        timeElem.innerText = draft.timestamp || 'earlier session';
+        banner.classList.remove('hidden');
+      }
+    }
+  } catch (err) {
+    console.warn('Error checking local draft:', err);
+  }
+}
+
+function restoreDraftData() {
+  try {
+    const draftStr = localStorage.getItem('jankalyan_form_draft');
+    if (!draftStr) return;
+
+    const draft = JSON.parse(draftStr);
+    if (!draft || !draft.formData) return;
+
+    const { donor, medical_exam, consent, donation_details } = draft.formData;
+
+    if (donor) {
+      if (document.getElementById('donor_number')) document.getElementById('donor_number').value = donor.donor_number || '';
+      if (document.getElementById('donation_date') && donor.donation_date) document.getElementById('donation_date').value = donor.donation_date;
+      if (document.getElementById('full_name')) document.getElementById('full_name').value = donor.full_name || '';
+      if (document.getElementById('date_of_birth')) document.getElementById('date_of_birth').value = donor.date_of_birth || '';
+      if (document.getElementById('age')) document.getElementById('age').value = donor.age || 18;
+      if (document.getElementById('occupation')) document.getElementById('occupation').value = donor.occupation || '';
+      if (document.getElementById('organization_company')) document.getElementById('organization_company').value = donor.organization_company || '';
+      if (document.getElementById('residential_address')) document.getElementById('residential_address').value = donor.residential_address || '';
+      if (document.getElementById('city_district')) document.getElementById('city_district').value = donor.city_district || '';
+      if (document.getElementById('pincode')) document.getElementById('pincode').value = donor.pincode || '';
+      if (document.getElementById('mobile_number')) document.getElementById('mobile_number').value = donor.mobile_number || '';
+      if (document.getElementById('email')) document.getElementById('email').value = donor.email || '';
+      if (document.getElementById('blood_group_known')) document.getElementById('blood_group_known').value = donor.blood_group_known || 'Unknown';
+      if (document.getElementById('donation_type')) document.getElementById('donation_type').value = donor.donation_type || 'Voluntary';
+
+      const genderRadio = document.querySelector(`input[name="gender"][value="${donor.gender}"]`);
+      if (genderRadio) genderRadio.checked = true;
+    }
+
+    if (medical_exam) {
+      if (document.getElementById('weight_kg')) document.getElementById('weight_kg').value = medical_exam.weight_kg || '';
+      if (document.getElementById('height_cm')) document.getElementById('height_cm').value = medical_exam.height_cm || '';
+      if (document.getElementById('pulse_rate')) document.getElementById('pulse_rate').value = medical_exam.pulse_rate || '';
+      if (document.getElementById('bp_systolic')) document.getElementById('bp_systolic').value = medical_exam.bp_systolic || '';
+      if (document.getElementById('bp_diastolic')) document.getElementById('bp_diastolic').value = medical_exam.bp_diastolic || '';
+      if (document.getElementById('hemoglobin_g_dl')) document.getElementById('hemoglobin_g_dl').value = medical_exam.hemoglobin_g_dl || '';
+      if (document.getElementById('body_temperature')) document.getElementById('body_temperature').value = medical_exam.body_temperature || '';
+
+      const outcomeRadio = document.querySelector(`input[name="screening_outcome"][value="${medical_exam.screening_outcome}"]`);
+      if (outcomeRadio) outcomeRadio.checked = true;
+    }
+
+    if (donation_details) {
+      if (document.getElementById('blood_bag_number')) document.getElementById('blood_bag_number').value = donation_details.blood_bag_number || '';
+      if (document.getElementById('bag_type')) document.getElementById('bag_type').value = donation_details.bag_type || 'Single';
+      if (document.getElementById('anticoagulant')) document.getElementById('anticoagulant').value = donation_details.anticoagulant || 'CPDA-1';
+      if (document.getElementById('volume_ml')) document.getElementById('volume_ml').value = donation_details.volume_ml || 350;
+      if (document.getElementById('phlebotomist_staff_id')) document.getElementById('phlebotomist_staff_id').value = donation_details.phlebotomist_staff_id || '';
+    }
+
+    validateMedicalEligibility();
+    const banner = document.getElementById('draftBanner');
+    if (banner) banner.classList.add('hidden');
+
+    showToast('Unsaved draft restored successfully! (ड्राफ्ट पुनर्प्राप्त केला)', 'success');
+  } catch (err) {
+    console.error('Error restoring draft:', err);
+    showToast('Failed to restore draft.', 'error');
+  }
+}
+
+function discardDraftData() {
+  localStorage.removeItem('jankalyan_form_draft');
+  const banner = document.getElementById('draftBanner');
+  if (banner) banner.classList.add('hidden');
+  showToast('Draft discarded.', 'info');
+}
+

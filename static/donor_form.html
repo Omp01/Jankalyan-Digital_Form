@@ -18,6 +18,16 @@
       🔒 <strong>Notice:</strong> This record is finalised and locked. Edits can only be submitted if authorized by an Administrator/Medical Officer.
     </div>
 
+    <div id="draftBanner" class="hidden" style="background:#EFF6FF; border:1px solid #3B82F6; color:#1E40AF; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; border-radius: 8px; font-size: 0.95rem;">
+      <div>
+        📌 <strong>Unsaved Draft Found!</strong> You have unsaved progress from <span id="draftTimestamp" style="font-weight:600;"></span>.
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-primary" onclick="restoreDraftData()" style="padding: 6px 14px; font-size: 0.85rem; cursor:pointer;">📋 Restore Draft</button>
+        <button type="button" class="btn btn-secondary" onclick="discardDraftData()" style="padding: 6px 14px; font-size: 0.85rem; background: #64748B; color: #fff; cursor:pointer;">🗑️ Discard</button>
+      </div>
+    </div>
+
     <!-- Stepper Navigation -->
     <div class="stepper-wrapper">
       <div class="stepper-item active" id="step-indicator-1">

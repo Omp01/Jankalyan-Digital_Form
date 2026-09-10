@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://jankalyan-backend.onrender.com/api/:path*"
+    },
+    {
+      "source": "/print/:path*",
+      "destination": "https://jankalyan-backend.onrender.com/print/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/static/$1"
+    }
+  ]
+}
