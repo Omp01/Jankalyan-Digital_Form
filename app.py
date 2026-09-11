@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 from services.path_service import get_resource_path, get_db_path, get_data_dir
+from services.time_service import get_ist_now, get_ist_timestamp_str, get_ist_date_str, format_ist_display
 from services.db_service import get_db, close_db, query_db, execute_db, generate_record_number, DB_PATH
 from services.audit_service import log_audit
 from services.excel_service import generate_records_excel
@@ -45,26 +46,8 @@ def to_db_date(val):
     return val
 
 def to_display_date(val):
-    """Converts YYYY-MM-DD or ISO datetime to DD-MM-YYYY [HH:MM:SS]."""
-    if not val:
-        return ''
-    val = str(val).strip()
-    if not val or val == 'N/A' or val == 'None':
-        return val
-    if ' ' in val or 'T' in val:
-        parts = val.replace('T', ' ').split(' ')
-        d_part = parts[0]
-        t_part = ' '.join(parts[1:])
-        dp = d_part.split('-')
-        if len(dp) == 3 and len(dp[0]) == 4: # YYYY-MM-DD
-            return f"{dp[2]}-{dp[1]}-{dp[0]} {t_part}".strip()
-        elif len(dp) == 3 and len(dp[0]) == 2: # DD-MM-YYYY
-            return val
-        return val
-    dp = val.split('-')
-    if len(dp) == 3 and len(dp[0]) == 4: # YYYY-MM-DD
-        return f"{dp[2]}-{dp[1]}-{dp[0]}"
-    return val
+    """Converts YYYY-MM-DD or ISO datetime to Indian standard format DD-MM-YYYY [HH:MM:SS]."""
+    return format_ist_display(val)
 
 @app.template_filter('format_date')
 def jinja_format_date(val):
@@ -203,9 +186,9 @@ def create_user():
 
     pwd_hash = generate_password_hash(password)
     user_id = execute_db("""
-        INSERT INTO users (username, password_hash, full_name, role, medical_reg_no, is_active)
-        VALUES (?, ?, ?, ?, ?, 1)
-    """, (username, pwd_hash, full_name, role, medical_reg_no))
+        INSERT INTO users (username, password_hash, full_name, role, medical_reg_no, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, 1, ?)
+    """, (username, pwd_hash, full_name, role, medical_reg_no, get_ist_timestamp_str()))
 
     log_audit('USER_CREATED', details=f"Created user {username} with role {role}")
     return jsonify({'success': True, 'user_id': user_id, 'message': 'User created successfully'})
@@ -432,20 +415,22 @@ def create_or_update_record():
 
         status = 'DRAFT' if save_as_draft else 'SUBMITTED'
         donation_date_db = to_db_date(donor.get('donation_date'))
+        current_ist_time = get_ist_timestamp_str()
         if donation_date_db:
-            execute_db("UPDATE blood_donation_records SET updated_by = ?, updated_at = CURRENT_TIMESTAMP, status = ?, donation_date = ? WHERE id = ?",
-                       (user_id, status, donation_date_db, record_id))
+            execute_db("UPDATE blood_donation_records SET updated_by = ?, updated_at = ?, status = ?, donation_date = ? WHERE id = ?",
+                       (user_id, current_ist_time, status, donation_date_db, record_id))
         else:
-            execute_db("UPDATE blood_donation_records SET updated_by = ?, updated_at = CURRENT_TIMESTAMP, status = ? WHERE id = ?",
-                       (user_id, status, record_id))
+            execute_db("UPDATE blood_donation_records SET updated_by = ?, updated_at = ?, status = ? WHERE id = ?",
+                       (user_id, current_ist_time, status, record_id))
     else:
         rec_num = generate_record_number()
-        donation_date = to_db_date(donor.get('donation_date')) or datetime.date.today().isoformat()
+        donation_date = to_db_date(donor.get('donation_date')) or get_ist_date_str()
         status = 'DRAFT' if save_as_draft else 'SUBMITTED'
+        current_ist_time = get_ist_timestamp_str()
         record_id = execute_db("""
-            INSERT INTO blood_donation_records (record_number, donor_number, donation_date, status, created_by)
-            VALUES (?, ?, ?, ?, ?)
-        """, (rec_num, donor.get('donor_number', ''), donation_date, status, user_id))
+            INSERT INTO blood_donation_records (record_number, donor_number, donation_date, status, created_by, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (rec_num, donor.get('donor_number', ''), donation_date, status, user_id, current_ist_time, current_ist_time))
 
     rec = query_db("SELECT record_number FROM blood_donation_records WHERE id = ?", (record_id,), one=True)
     rec_num = rec['record_number']
@@ -492,9 +477,9 @@ def create_or_update_record():
 
     execute_db("DELETE FROM donor_consent WHERE record_id = ?", (record_id,))
     execute_db("""
-        INSERT INTO donor_consent (record_id, consent_given, abnormal_results_notify, donor_signature_data)
-        VALUES (?, ?, ?, ?)
-    """, (record_id, 1 if consent.get('consent_given', True) else 0, 1 if consent.get('abnormal_results_notify', True) else 0, consent.get('donor_signature_data', '')))
+        INSERT INTO donor_consent (record_id, consent_given, abnormal_results_notify, donor_signature_data, consent_timestamp)
+        VALUES (?, ?, ?, ?, ?)
+    """, (record_id, 1 if consent.get('consent_given', True) else 0, 1 if consent.get('abnormal_results_notify', True) else 0, consent.get('donor_signature_data', ''), get_ist_timestamp_str()))
 
     execute_db("DELETE FROM donation_details WHERE record_id = ?", (record_id,))
     execute_db("""
@@ -547,14 +532,15 @@ def sign_record(record_id):
     user_id = session.get('user_id')
     user_name = session.get('full_name')
     user_role = session.get('role')
+    current_ist_time = get_ist_timestamp_str()
 
     execute_db("DELETE FROM signatures WHERE record_id = ?", (record_id,))
     execute_db("""
-        INSERT INTO signatures (record_id, user_id, user_name, user_role, signature_data, medical_notes)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (record_id, user_id, user_name, user_role, signature_data, medical_notes))
+        INSERT INTO signatures (record_id, user_id, user_name, user_role, signature_data, medical_notes, signed_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (record_id, user_id, user_name, user_role, signature_data, medical_notes, current_ist_time))
 
-    execute_db("UPDATE blood_donation_records SET status = 'SIGNED', updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", (user_id, record_id))
+    execute_db("UPDATE blood_donation_records SET status = 'SIGNED', updated_by = ?, updated_at = ? WHERE id = ?", (user_id, current_ist_time, record_id))
 
     log_audit('SIGNATURE_ADDED', record_id=record_id, record_number=rec['record_number'], details=f"Signed by Medical Officer {user_name}")
     log_audit('RECORD_FINALISED', record_id=record_id, record_number=rec['record_number'], details="Record locked and completed")
@@ -668,7 +654,7 @@ def export_excel():
         excel_file,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name=f'BloodBank_Records_{datetime.date.today().isoformat()}.xlsx'
+        download_name=f'BloodBank_Records_{get_ist_date_str()}.xlsx'
     )
 
 # ==================== DATABASE BACKUP & RESTORE APIs ====================
@@ -680,7 +666,7 @@ def download_backup():
         return jsonify({'success': False, 'message': 'Database file not found'}), 404
 
     log_audit('DATABASE_BACKUP', details="Admin downloaded bloodbank.db backup")
-    backup_filename = f"bloodbank_backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+    backup_filename = f"bloodbank_backup_{get_ist_now().strftime('%Y%m%d_%H%M%S')}.db"
     return send_file(current_db, as_attachment=True, download_name=backup_filename)
 
 @app.route('/api/backup/restore', methods=['POST'])

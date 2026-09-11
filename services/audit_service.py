@@ -1,4 +1,5 @@
 from services.db_service import execute_db
+from services.time_service import get_ist_timestamp_str
 from flask import request, session
 
 def log_audit(action, record_id=None, record_number=None, details=None):
@@ -6,10 +7,11 @@ def log_audit(action, record_id=None, record_number=None, details=None):
         user_id = session.get('user_id')
         username = session.get('username', 'ANONYMOUS')
         ip_address = request.remote_addr if request else '127.0.0.1'
+        current_time = get_ist_timestamp_str()
 
         execute_db("""
-            INSERT INTO audit_logs (user_id, username, record_id, record_number, action, details, ip_address)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (user_id, username, record_id, record_number, action, details, ip_address))
+            INSERT INTO audit_logs (user_id, username, record_id, record_number, action, details, ip_address, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user_id, username, record_id, record_number, action, details, ip_address, current_time))
     except Exception as e:
         print(f"Error logging audit: {e}")

@@ -57,8 +57,8 @@ def generate_record_number():
     row = cur.fetchone()
     seq = int(row['setting_value']) if row else 1
 
-    import datetime
-    current_year = datetime.datetime.now().year
+    from services.time_service import get_ist_now
+    current_year = get_ist_now().year
     rec_num = f"{prefix}-{current_year}-{seq:06d}"
 
     # Increment sequence for next record
