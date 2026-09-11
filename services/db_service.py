@@ -1,12 +1,27 @@
 import os
 import sqlite3
 from flask import g
+from services.path_service import get_db_path
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database', 'bloodbank.db')
+def _get_current_db_path():
+    return get_db_path()
+
+# Backwards-compatible attribute (getter or dynamic path)
+class _DBPathProxy(str):
+    def __str__(self):
+        return get_db_path()
+    def __fspath__(self):
+        return get_db_path()
+    def __repr__(self):
+        return repr(get_db_path())
+
+DB_PATH = _DBPathProxy()
 
 def get_db():
     if 'db' not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        current_path = get_db_path()
+        os.makedirs(os.path.dirname(current_path), exist_ok=True)
+        g.db = sqlite3.connect(current_path)
         g.db.row_factory = sqlite3.Row
         # Enable foreign keys
         g.db.execute("PRAGMA foreign_keys = ON")

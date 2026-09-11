@@ -6,15 +6,28 @@ from flask import Flask, request, jsonify, render_template, send_file, session, 
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
+from services.path_service import get_resource_path, get_db_path, get_data_dir
 from services.db_service import get_db, close_db, query_db, execute_db, generate_record_number, DB_PATH
 from services.audit_service import log_audit
 from services.excel_service import generate_records_excel
 from middleware.auth_decorator import login_required, roles_required
+from database.db_init import init_db
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+app = Flask(
+    __name__,
+    static_folder=get_resource_path('static'),
+    template_folder=get_resource_path('templates')
+)
 app.secret_key = 'blood_bank_super_secret_session_key_hospital_2026'
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(hours=12)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+# Ensure SQLite database exists at runtime path (e.g. in %APPDATA% when packaged)
+if not os.path.exists(get_db_path()):
+    try:
+        init_db(get_db_path())
+    except Exception as _e:
+        print(f"Auto-init DB error: {_e}")
 
 def to_db_date(val):
     """Converts DD-MM-YYYY or YYYY-MM-DD to YYYY-MM-DD for DB storage."""
@@ -662,12 +675,13 @@ def export_excel():
 @app.route('/api/backup/download', methods=['GET'])
 @roles_required(['ADMIN'])
 def download_backup():
-    if not os.path.exists(DB_PATH):
+    current_db = get_db_path()
+    if not os.path.exists(current_db):
         return jsonify({'success': False, 'message': 'Database file not found'}), 404
 
     log_audit('DATABASE_BACKUP', details="Admin downloaded bloodbank.db backup")
     backup_filename = f"bloodbank_backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-    return send_file(DB_PATH, as_attachment=True, download_name=backup_filename)
+    return send_file(current_db, as_attachment=True, download_name=backup_filename)
 
 @app.route('/api/backup/restore', methods=['POST'])
 @roles_required(['ADMIN'])
@@ -682,8 +696,10 @@ def restore_backup():
     if not file.filename.endswith('.db'):
         return jsonify({'success': False, 'message': 'Invalid file format. Must be a .db file.'}), 400
 
+    current_db = get_db_path()
     close_db()
-    file.save(DB_PATH)
+    os.makedirs(os.path.dirname(current_db), exist_ok=True)
+    file.save(current_db)
 
     log_audit('DATABASE_RESTORED', details=f"Database restored from {file.filename}")
     return jsonify({'success': True, 'message': 'Database restored successfully.'})
@@ -701,5 +717,5 @@ def get_audit_logs():
     return jsonify({'success': True, 'logs': out})
 
 if __name__ == '__main__':
-    print("Starting Jankalyan Blood Bank Digital Form System server on http://localhost:5000 ...")
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    print("Starting Jankalyan Blood Bank Digital Form System server on http://localhost:8000 ...")
+    app.run(host='0.0.0.0', port=8000, debug=False)

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Jankalyan Blood Bank Digital Form System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: white;
+      padding: 18px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .stat-icon {
+      font-size: 2.2rem;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .stat-val {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+    .stat-lbl {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    @media (max-width: 600px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .stat-card {
+        padding: 14px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .stat-icon {
+        font-size: 1.6rem;
+        padding: 8px;
+      }
+      .stat-val {
+        font-size: 1.5rem;
+      }
+      .stat-lbl {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header id="appHeader"></header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🩸</div>
+        <div>
+          <div id="statTotal" class="stat-val">0</div>
+          <div class="stat-lbl">Total Records (एकूण नोंदी)</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div>
+          <div id="statPending" class="stat-val">0</div>
+          <div class="stat-lbl">Pending Verification (पडताळणी प्रलंबित)</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div>
+          <div id="statSigned" class="stat-val">0</div>
+          <div class="stat-lbl">Signed & Finalised (अंतिम नोंदी)</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div>
+          <div id="statToday" class="stat-val">0</div>
+          <div class="stat-lbl">Today's Donations (आजचे रक्तदान)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>📋 Recent Blood Donation Records (अलीकडील रक्तदान नोंदी)</span>
+        <a href="/donor_form.html" class="btn btn-primary" style="font-size: 0.85rem; margin-left:auto;">+ Create New Record</a>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="table-questionnaire" id="recordsTable">
+          <thead>
+            <tr>
+              <th>Record No</th>
+              <th>Date</th>
+              <th>Donor Name</th>
+              <th>Blood Group</th>
+              <th>Blood Bag No</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTableBody">
+            <tr><td colspan="7" class="text-center">Loading records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/language.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/records.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkAuth();
+      fetchDashboardStats();
+    });
+
+    async function fetchDashboardStats() {
+      try {
+        const res = await fetch('/api/records');
+        const data = await res.json();
+        if (data.success) {
+          const recs = data.records;
+          document.getElementById('statTotal').innerText = recs.length;
+          document.getElementById('statPending').innerText = recs.filter(r => ['DRAFT', 'SUBMITTED', 'MEDICAL_VERIFICATION'].includes((r.status || '').toUpperCase())).length;
+          document.getElementById('statSigned').innerText = recs.filter(r => ['SIGNED', 'COMPLETED'].includes((r.status || '').toUpperCase())).length;
+
+          const today = new Date();
+          const dd = String(today.getDate()).padStart(2, '0');
+          const mm = String(today.getMonth() + 1).padStart(2, '0');
+          const yyyy = today.getFullYear();
+          const todayDisplay = `${dd}-${mm}-${yyyy}`;
+          const todayISO = `${yyyy}-${mm}-${dd}`;
+          document.getElementById('statToday').innerText = recs.filter(r => {
+            const formatted = formatDate(r.donation_date);
+            return formatted === todayDisplay || r.donation_date === todayISO;
+          }).length;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blood Donor Registration & Screening - QF/JKRP/18</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/form.css">
+  <style>
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header id="appHeader"></header>
+
+    <div id="lockedNotice" class="alert-eligibility hidden" style="background:#FFFBEB; border-color:#F59E0B; color:#92400E;">
+      🔒 <strong>Notice:</strong> This record is finalised and locked. Edits can only be submitted if authorized by an Administrator/Medical Officer.
+    </div>
+
+    <div id="draftBanner" class="hidden" style="background:#EFF6FF; border:1px solid #3B82F6; color:#1E40AF; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; border-radius: 8px; font-size: 0.95rem;">
+      <div>
+        📌 <strong>Unsaved Draft Found!</strong> You have unsaved progress from <span id="draftTimestamp" style="font-weight:600;"></span>.
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-primary" onclick="restoreDraftData()" style="padding: 6px 14px; font-size: 0.85rem; cursor:pointer;">📋 Restore Draft</button>
+        <button type="button" class="btn btn-secondary" onclick="discardDraftData()" style="padding: 6px 14px; font-size: 0.85rem; background: #64748B; color: #fff; cursor:pointer;">🗑️ Discard</button>
+      </div>
+    </div>
+
+    <!-- Stepper Navigation -->
+    <div class="stepper-wrapper">
+      <div class="stepper-item active" id="step-indicator-1">
+        <div class="stepper-counter">1</div>
+        <div class="stepper-title" data-i18n="step_1">Demographics</div>
+      </div>
+      <div class="stepper-item" id="step-indicator-2">
+        <div class="stepper-counter">2</div>
+        <div class="stepper-title" data-i18n="step_2">Health Questionnaire</div>
+      </div>
+      <div class="stepper-item" id="step-indicator-3">
+        <div class="stepper-counter">3</div>
+        <div class="stepper-title" data-i18n="step_3">Deferrals & History</div>
+      </div>
+      <div class="stepper-item" id="step-indicator-4">
+        <div class="stepper-counter">4</div>
+        <div class="stepper-title" data-i18n="step_4">Medical Exam</div>
+      </div>
+      <div class="stepper-item" id="step-indicator-5">
+        <div class="stepper-counter">5</div>
+        <div class="stepper-title" data-i18n="step_5">Blood Bag</div>
+      </div>
+      <div class="stepper-item" id="step-indicator-6">
+        <div class="stepper-counter">6</div>
+        <div class="stepper-title" data-i18n="step_6">Verification & Signature</div>
+      </div>
+    </div>
+
+    <form id="donorForm" onsubmit="event.preventDefault();">
+      <!-- ==================== STEP 1: DEMOGRAPHICS ==================== -->
+      <div class="form-step active" id="step-1">
+        <div class="card">
+          <div class="card-title">
+            <span data-i18n="step_1">1. Donor Demographics (रक्तदाता प्राथमिक माहिती)</span>
+            <span style="font-size:0.9rem; margin-left:auto; color:var(--primary);">Record: <strong id="recNumDisplay">NEW</strong></span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label><span data-i18n="donation_date">Date of Donation</span> *</label>
+              <input type="date" id="donation_date" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="donor_number">Donor ID</span></label>
+              <input type="text" id="donor_number" class="form-control" placeholder="Optional Donor ID">
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <label><span data-i18n="full_name">Full Name</span> *</label>
+              <input type="text" id="full_name" class="form-control" required placeholder="First Name Father/Husband Name Surname">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="gender">Gender</span> *</label>
+              <div class="btn-group-toggle">
+                <input type="radio" name="gender" id="gender_m" value="Male" checked>
+                <label for="gender_m" data-i18n="gender_male">Male</label>
+                <input type="radio" name="gender" id="gender_f" value="Female">
+                <label for="gender_f" data-i18n="gender_female">Female</label>
+                <input type="radio" name="gender" id="gender_t" value="Others">
+                <label for="gender_t" data-i18n="gender_others">Others</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="date_of_birth">Date of Birth</span></label>
+              <input type="date" id="date_of_birth" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="age">Age (Years)</span> *</label>
+              <input type="number" id="age" class="form-control" min="18" max="65" value="25" required>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="mobile_number">Mobile Number</span> *</label>
+              <input type="tel" id="mobile_number" class="form-control" pattern="[0-9]{10}" required placeholder="10 digit Indian mobile">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="email">Email Address</span></label>
+              <input type="email" id="email" class="form-control" placeholder="name@example.com">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="occupation">Occupation</span></label>
+              <input type="text" id="occupation" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="organization_company">Organization / Camp Name</span></label>
+              <input type="text" id="organization_company" class="form-control">
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <label><span data-i18n="residential_address">Residential Address</span> *</label>
+              <input type="text" id="residential_address" class="form-control" required placeholder="House No, Street, Landmark">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="city_district">City / District</span> *</label>
+              <input type="text" id="city_district" class="form-control" required placeholder="e.g. Pune">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="pincode">Pincode</span></label>
+              <input type="text" id="pincode" class="form-control" pattern="[0-9]{6}">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="blood_group_known">Known Blood Group</span></label>
+              <select id="blood_group_known" class="form-control">
+                <option value="Unknown">Unknown / नमुद नाही</option>
+                <option value="A+">A +ve</option>
+                <option value="A-">A -ve</option>
+                <option value="B+">B +ve</option>
+                <option value="B-">B -ve</option>
+                <option value="AB+">AB +ve</option>
+                <option value="AB-">AB -ve</option>
+                <option value="O+">O +ve</option>
+                <option value="O-">O -ve</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="donation_type">Type of Donation</span> *</label>
+              <select id="donation_type" class="form-control" required>
+                <option value="Voluntary">Voluntary (ऐच्छिक)</option>
+                <option value="Replacement">Replacement (बदली)</option>
+                <option value="Autologous">Autologous (स्वयं-दान)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="last_donation_date">Date of Last Donation</span></label>
+              <input type="date" id="last_donation_date" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="number_of_past_donations">Total Past Donations</span></label>
+              <input type="number" id="number_of_past_donations" class="form-control" min="0" value="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions-bar">
+          <div></div>
+          <div>
+            <button type="button" class="btn btn-secondary" onclick="saveRecord(true)" data-i18n="btn_save_draft">Save Draft</button>
+            <button type="button" class="btn btn-primary" onclick="goToStep(2)" data-i18n="btn_next">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 2: HEALTH QUESTIONNAIRE & MEDICATION HISTORY ==================== -->
+      <div class="form-step" id="step-2">
+        <div class="card">
+          <div class="card-title">
+            <span data-i18n="step_2">2. Health Questionnaire (प्राथमिक आरोग्य प्रश्नावली)</span>
+          </div>
+
+          <table class="table-questionnaire" style="margin-bottom:24px;">
+            <thead>
+              <tr>
+                <th width="10%">No.</th>
+                <th width="75%">Question Statement (English & Marathi)</th>
+                <th width="15%">Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1</strong></td>
+                <td><span data-i18n="q1_age_18_65">1. Are you within 18-65 years of age? (आपण १८-६५ वर्षे या वयोगटातील आहात का ?)</span></td>
+                <td><select name="q1_age_18_65" class="form-control"><option value="Yes">Yes / होय</option><option value="No">No / नाही</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>2</strong></td>
+                <td><span data-i18n="q2_meals_4h">2. Have you taken breakfast/meals within the last 4 hours? (गेल्या ४ तासांत आपण नाश्ता/जेवण केले आहे का?)</span></td>
+                <td><select name="q2_meals_4h" class="form-control"><option value="Yes">Yes / होय</option><option value="No">No / नाही</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>3A</strong></td>
+                <td><span data-i18n="q3a_slept_well">3A. Have you slept well last night ? (काल रात्री चांगली झोप लागली का?)</span></td>
+                <td><select name="q3a_slept_well" class="form-control"><option value="Yes">Yes / होय</option><option value="No">No / नाही</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>3B</strong></td>
+                <td><span data-i18n="q3b_night_shift_sleep">3B. If you are a night shift worker, have you got undisturbed sleep adequately? (जर आपण रात्रीच्या शिफ्टमध्ये काम करत असाल, तर आपणास पुरेशी शांत झोप मिळाली आहे का?)</span></td>
+                <td><select name="q3b_night_shift_sleep" class="form-control"><option value="Yes">Yes / होय</option><option value="No">No / नाही</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>4</strong></td>
+                <td><span data-i18n="q4_heavy_work_12h">4. Have you been involved in heavy/strenuous work in the last 12 hours? (गेल्या १२ तासांत आपण अतिश्रमाची कामे केली आहेत का?)</span></td>
+                <td><select name="q4_heavy_work_12h" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>5</strong></td>
+                <td><span data-i18n="q5_malaise_weakness">5. Are you having general malaise /pain/weakness today? (आज आपणास कणकण /अंगदुखी / अशक्तपणा जाणवत आहे का?)</span></td>
+                <td><select name="q5_malaise_weakness" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>6</strong></td>
+                <td><span data-i18n="q6_cough_cold_mood">6. Are you suffering from cough/cold/sinusitis/conjunctivitis/Anxiety/mood disorders? (आपणास खोकला/सर्दी/डोळे येणे / चिंता/ मूड डिसऑर्डरचा त्रास आहे का?)</span></td>
+                <td><select name="q6_cough_cold_mood" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>7</strong></td>
+                <td><span data-i18n="q7_alcohol_24h">7. Have you consumed alcohol in the last 24 hours? (गेल्या २४ तासांत आपण मद्य प्राशन केले आहे का?)</span></td>
+                <td><select name="q7_alcohol_24h" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>8</strong></td>
+                <td><span data-i18n="q8_loose_motions_15d">8. Have you had loose motions/urinary infection/mumps/measles/chickenpox in the last 15 days ? (गेल्या १५ दिवसांत आपणास जुलाब / मूत्र संसर्ग/गालगुंड/गोवर/कांजिण्या यांपैकी काही झाले होते का ?)</span></td>
+                <td><select name="q8_loose_motions_15d" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>9</strong></td>
+                <td><span data-i18n="q9_migraine_weekly">9. Do you have migraine headache at a frequency of more than once a week? (आपणास आठवड्यातून एकापेक्षा जास्त वेळा मायग्रेन / डोकेदुखीचा त्रास होतो का?)</span></td>
+                <td><select name="q9_migraine_weekly" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><strong>10</strong></td>
+                <td><span data-i18n="q10_daily_meds">10. Are you on daily medications for BP, diabetes, or blood thinners (not altered doses in 1 month)? (आपण उच्च रक्तदाब, मधुमेह किंवा रक्त पातळ करणाऱ्या औषधांवर आहात का?)</span></td>
+                <td><select name="q10_daily_meds" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="card-title">
+            <span data-i18n="med_history_title">Medication & Disease History (Timeframe Deferral Checklist)</span>
+          </div>
+
+          <table class="table-questionnaire">
+            <thead>
+              <tr>
+                <th width="20%" data-i18n="med_timeframe">Timeframe</th>
+                <th width="65%" data-i18n="med_question">Question / Condition Description</th>
+                <th width="15%" data-i18n="med_answer">Yes / No</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-i18n="tf_daily_2m">Daily Basis (2 months)</td>
+                <td data-i18n="med_daily_thyroid_desc">Medicines for thyroid disorders (थायरॉईडच्या कमतरतेसाठी औषधे)</td>
+                <td>
+                  <select name="med_daily_thyroid" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_3days">In last 3 days</td>
+                <td data-i18n="med_3days_aspirin_desc">Aspirin or Salicylates (ॲस्पिरिन किंवा सॅलिसिलेट्स)</td>
+                <td>
+                  <select name="med_3days_aspirin" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_7days">In last 7 days</td>
+                <td data-i18n="med_7days_antifungals_desc">Antifungals (Ketoconazole) or Anthelmintics (Mebendazole)</td>
+                <td>
+                  <select name="med_7days_antifungals" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_2weeks">In last 2 Weeks</td>
+                <td data-i18n="med_2weeks_antibiotics_desc">Antibiotics, steroids, measles/mumps/chickenpox, vaccines (Pertussis, Hep B, Covid Non-live)</td>
+                <td>
+                  <select name="med_2weeks_antibiotics" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_28days">In last 28 days</td>
+                <td data-i18n="med_28days_vaccines_desc">Vaccines (Hep A, Typhoid, Swine flu, Polio, COVID-19 live), Anti-tetanus/venom serum</td>
+                <td>
+                  <select name="med_28days_vaccines" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_1month">In last 1 month</td>
+                <td data-i18n="med_1month_acne_prostate_desc">Acne treatment (Isotretinoin) or Prostate complaint treatment (Finasteride)</td>
+                <td>
+                  <select name="med_1month_acne_prostate" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_3months">In last 3 months</td>
+                <td data-i18n="med_3months_malaria_desc">Treatment for malaria or Minor Surgery (मलेरिया उपचार / किरकोळ शस्त्रक्रिया)</td>
+                <td>
+                  <select name="med_3months_malaria" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_6months">In last 6 months</td>
+                <td data-i18n="med_6months_radioactive_desc">Radioactive injection, Dutasteride, Hair transplant / PRP therapy, Dengue/Chikungunya</td>
+                <td>
+                  <select name="med_6months_radioactive" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_1year">In last 1 Year</td>
+                <td data-i18n="med_1year_rabies_tattoo_desc">Anti-rabies, Jaundice / Hep A/E, Tattoo / piercing, Blood transfusion / major surgery, Typhoid</td>
+                <td>
+                  <select name="med_1year_rabies_tattoo" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+              <tr>
+                <td data-i18n="tf_2years">In last 2 years</td>
+                <td data-i18n="med_2years_tb_desc">Tuberculosis (क्षयरोग) or Osteomyelitis (हाडांचा संसर्ग)</td>
+                <td>
+                  <select name="med_2years_tb" class="form-control"><option value="No">No</option><option value="Yes">Yes</option></select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="card-title" style="margin-top:24px;">
+            <span data-i18n="q11_endoscopy_title">11. Endoscopy / Durbeeni Inspection History (दुर्बिणी मधून तपासणी)</span>
+          </div>
+          <table class="table-questionnaire" style="margin-bottom:24px;">
+            <tbody>
+              <tr>
+                <td><span data-i18n="q11a_endoscopy_sampling">11A. No sampling done within 7 days? (गेल्या ७ दिवसात नमुना घेतलेला नाही)</span></td>
+                <td><select name="q11a_endoscopy_sampling" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q11b_endoscopy_malignant">11B (1). Finding is Malignant / Cancer disorder? (कॅन्सरचे निदान)</span></td>
+                <td><select name="q11b_endoscopy_malignant" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q11b_endoscopy_benign">11B (2). Finding is Benign disorder (within 28 days)? (सौम्य आजार निदान)</span></td>
+                <td><select name="q11b_endoscopy_benign" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q11c_endoscopy_other">11C. Any other disorder till completion of treatment? (इतर आजारावर उपचार)</span></td>
+                <td><select name="q11c_endoscopy_other" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="card-title">
+            <span data-i18n="q12_blood_donation_title">12. For Blood Donation History & Past Complications (रक्तदानासाठी)</span>
+          </div>
+          <table class="table-questionnaire">
+            <tbody>
+              <tr>
+                <td><span data-i18n="q12a_male_3months">12A. For males: Have you donated blood in the last 3 months? (पुरुषांसाठी: ३ महिन्यात रक्तदान)</span></td>
+                <td><select name="q12a_male_3months" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q12b_female_4months">12B. For females: Have you donated blood in the last 4 months? (महिलांसाठी: ४ महिन्यात रक्तदान)</span></td>
+                <td><select name="q12b_female_4months" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q12c_donation_trouble">12C. Faced any trouble/complication after previous blood donation (fainting, swelling, arm discoloration)?</span></td>
+                <td><select name="q12c_donation_trouble" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q12d_platelets_28days">12D. Donated platelets in the last 28 days (with complete red cell infusion)?</span></td>
+                <td><select name="q12d_platelets_28days" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)" data-i18n="btn_previous">← Previous</button>
+          <div>
+            <button type="button" class="btn btn-secondary" onclick="saveRecord(true)" data-i18n="btn_save_draft">Save Draft</button>
+            <button type="button" class="btn btn-primary" onclick="goToStep(3)" data-i18n="btn_next">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 3: DEFERRALS, PERSONAL HISTORY & SYMPTOMS ==================== -->
+      <div class="form-step" id="step-3">
+        <div class="card">
+          <div class="card-title">
+            <span data-i18n="step_3">3. Deferrals & Personal History (स्थगिती तक्ता व इतिहास)</span>
+          </div>
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;" data-i18n="permanent_deferral_desc">Check (✓) if donor has history of any of the following:</p>
+
+          <div class="checkbox-grid">
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="chest_pain"> <span data-i18n="perm_chest_pain">Chest Pain / Shortness of Breath / Swollen Feet (छातीत दुखणे/पायांना सूज)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="etretinate"> <span data-i18n="perm_etretinate">Treatment with Etretinate (ॲट्रीटिनेट औषध उपचार)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="ankylosing_spondylosis"> <span data-i18n="perm_ankylosing_spondylosis">Ankylosing Spondylosis (अँकायलोझिंग स्पॉन्डिलायसिस)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="asthma_lung"> <span data-i18n="perm_asthma_lung">Asthma & Chronic Obstructive/Restrictive Lung Disease (दमा व फुफ्फुसाचा आजार)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="kidney_disease"> <span data-i18n="perm_kidney_disease">Chronic Kidney Infection / Failure (मूत्रपिंडाचा आजार)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="insulin_diabetes"> <span data-i18n="perm_insulin_diabetes">Insulin Dependent Diabetes / Multi-organ Complications (मधुमेह इन्सुलिन)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="delayed_faints"> <span data-i18n="perm_delayed_faints">Unexplained Delayed Faints / Faint with Injury / Two Consecutive Faints</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="epilepsy_fits"> <span data-i18n="perm_epilepsy_fits">Epilepsy / Fits / Seizures / Convulsions (झटके / अपस्मार)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="heart_disease"> <span data-i18n="perm_heart_disease">Heart Disease / Surgery / Bypass / Angioplasty / Angina / Rheumatic Heart (हृदयरोग)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="cancer_cytotoxic"> <span data-i18n="perm_cancer_cytotoxic">Cancer / Cytotoxic Drugs / Stem Cells / Organ Transplant (कर्करोग)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="liver_failure"> <span data-i18n="perm_liver_failure">Chronic Liver Infection / Failure / Leprosy / Leishmaniasis / Polycythemia Vera</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="hiv_high_risk"> <span data-i18n="perm_hiv_high_risk">HIV Risk / Transgender / MSM / Sex Workers / Syphilis / Gonorrhea (एच.आय.व्ही धोका)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="severe_allergy"> <span data-i18n="perm_severe_allergy">Severe Allergy to Betadine/Spirit/Adhesive Bandage (तीव्र ॲलर्जी)</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="thyroid_malignant"> <span data-i18n="perm_thyroid_malignant">Thyroid Disorders - Thyrotoxicosis / Malignant Tumor / Anti-thyroid drugs</span></div>
+            <div class="checkbox-item"><input type="checkbox" name="perm_deferral" value="hemoglobinopathies"> <span data-i18n="perm_hemoglobinopathies">Hemoglobinopathies / Red Cell Enzyme Deficiencies with Hemolysis</span></div>
+          </div>
+
+          <div class="card-title" style="margin-top:24px;" data-i18n="high_risk_title">14. Personal History (वैयक्तिक माहिती)</div>
+          <table class="table-questionnaire" style="margin-bottom:20px;">
+            <tbody>
+              <tr>
+                <td><span data-i18n="q14a_hiv_diagnosis">14A. Were you diagnosed with HIV/AIDS, Hepatitis B/C, Syphilis, or Gonorrhea?</span></td>
+                <td><select name="q14a_hiv_diagnosis" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q14b_unsafe_sex">14B. Are you having unsafe sexual practices (multiple partners / sex for money)?</span></td>
+                <td><select name="q14b_unsafe_sex" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q14c_injected_narcotics">14C. Have you ever injected drugs/narcotics not prescribed by a qualified doctor?</span></td>
+                <td><select name="q14c_injected_narcotics" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q14d_partner_risk">14D. Does your sexual partner belong to any above categories (14A, B, C)?</span></td>
+                <td><select name="q14d_partner_risk" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="card-title" data-i18n="symptoms_title">15. Recent Symptoms History (अलीकडची लक्षणे)</div>
+          <table class="table-questionnaire" style="margin-bottom:20px;">
+            <tbody>
+              <tr>
+                <td><span data-i18n="q15a_night_sweats">15A. Night Sweats (रात्री घाम येणे)</span></td>
+                <td><select name="q15a_night_sweats" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q15b_persistent_fever">15B. Persistent Fever (सतत ताप)</span></td>
+                <td><select name="q15b_persistent_fever" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q15c_swollen_glands">15C. Swollen Glands (लसिका ग्रंथींना सूज)</span></td>
+                <td><select name="q15c_swollen_glands" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q15d_persistent_diarrhea">15D. Persistent Diarrhoea (सतत जुलाब)</span></td>
+                <td><select name="q15d_persistent_diarrhea" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q15e_weight_loss">15E. Unexplained weight loss (वजन कमी होणे)</span></td>
+                <td><select name="q15e_weight_loss" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="card-title" data-i18n="female_title">16. For Female Donors (स्त्रियांसाठी विशेष प्रश्न)</div>
+          <table class="table-questionnaire" style="margin-bottom:20px;">
+            <tbody>
+              <tr>
+                <td><span data-i18n="q16a_female_abortion">16A. Abortion in the last 6 months? (गर्भपात)</span></td>
+                <td><select name="q16a_female_abortion" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q16b_female_pregnant">16B. Are you pregnant? (गरोदर)</span></td>
+                <td><select name="q16b_female_pregnant" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q16c_female_delivery">16C. Delivered a child in the last 12 months? (प्रसूती)</span></td>
+                <td><select name="q16c_female_delivery" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q16d_female_breastfeeding">16D. Are you breastfeeding your baby? (स्तनपान)</span></td>
+                <td><select name="q16d_female_breastfeeding" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q16e_female_periods">16E. Are you having your periods today? (मासिक पाळी)</span></td>
+                <td><select name="q16e_female_periods" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q16f_female_pcod">16F. Are you on medication for PCOD? (पीसीओडी औषधे)</span></td>
+                <td><select name="q16f_female_pcod" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="card-title" data-i18n="next24h_title">17. Next 24 Hours Scheduled High-Risk Duties (पुढील २४ तासांत कामे)</div>
+          <table class="table-questionnaire">
+            <tbody>
+              <tr>
+                <td><span data-i18n="q17a_air_crew">17A. Role as air crew member? (विमान चालक/क्रू)</span></td>
+                <td><select name="q17a_air_crew" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q17b_long_driver">17B. Driver for long distance vehicle? (वाहन चालक)</span></td>
+                <td><select name="q17b_long_driver" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q17c_strenuous_work">17C. Strenuous work required? (अतिश्रमाचे काम)</span></td>
+                <td><select name="q17c_strenuous_work" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q17d_emergency_service">17D. Emergency service (Fire / Ambulance)? (आपत्कालीन सेवा)</span></td>
+                <td><select name="q17d_emergency_service" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q17e_altitude_diving">17E. Work above (flying) or below (diving) sea level?</span></td>
+                <td><select name="q17e_altitude_diving" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+              <tr>
+                <td><span data-i18n="q17f_past_12h_duties">17F. Performed any of the above duties in the last 12 hours?</span></td>
+                <td><select name="q17f_past_12h_duties" class="form-control"><option value="No">No / नाही</option><option value="Yes">Yes / होय</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)" data-i18n="btn_previous">← Previous</button>
+          <div>
+            <button type="button" class="btn btn-secondary" onclick="saveRecord(true)" data-i18n="btn_save_draft">Save Draft</button>
+            <button type="button" class="btn btn-primary" onclick="goToStep(4)" data-i18n="btn_next">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 4: MEDICAL EXAMINATION ==================== -->
+      <div class="form-step" id="step-4">
+        <div class="card">
+          <div class="card-title">
+            <span data-i18n="step_4">4. Medical Examination (वैद्यकीय तपासणी)</span>
+          </div>
+
+          <div id="eligibilityAlert" class="alert-eligibility" style="display:none;"></div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label><span data-i18n="weight_kg">Weight (kg)</span> * [Min 45kg]</label>
+              <input type="number" id="weight_kg" class="form-control" step="0.5" min="30" max="150" value="65" required>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="height_cm">Height (cm)</span></label>
+              <input type="number" id="height_cm" class="form-control" value="168">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="pulse_rate">Pulse Rate (bpm)</span> * [60-100]</label>
+              <input type="number" id="pulse_rate" class="form-control" value="76" required>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="bp_systolic">BP Systolic (mmHg)</span> * [100-140]</label>
+              <input type="number" id="bp_systolic" class="form-control" value="120" required>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="bp_diastolic">BP Diastolic (mmHg)</span> * [60-90]</label>
+              <input type="number" id="bp_diastolic" class="form-control" value="80" required>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="hemoglobin_g_dl">Hemoglobin (g/dL)</span> * [Min 12.5]</label>
+              <input type="number" id="hemoglobin_g_dl" class="form-control" step="0.1" value="13.8" required>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="body_temperature">Body Temp (°F)</span> *</label>
+              <input type="number" id="body_temperature" class="form-control" step="0.1" value="98.4" required>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="skin_site_inspection">Skin / Arm Inspection</span> *</label>
+              <div class="btn-group-toggle">
+                <input type="radio" name="skin_site_inspection" id="skin_sat" value="Satisfactory" checked>
+                <label for="skin_sat" data-i18n="inspection_satisfactory">Satisfactory</label>
+                <input type="radio" name="skin_site_inspection" id="skin_unsat" value="Unsatisfactory">
+                <label for="skin_unsat" data-i18n="inspection_unsatisfactory">Unsatisfactory</label>
+              </div>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <label><span data-i18n="screening_outcome">Screening Decision</span> *</label>
+              <div class="btn-group-toggle">
+                <input type="radio" name="screening_outcome" id="outcome_el" value="ELIGIBLE" checked>
+                <label for="outcome_el" data-i18n="outcome_eligible">ELIGIBLE (पात्र)</label>
+                <input type="radio" name="screening_outcome" id="outcome_def" value="DEFERRED">
+                <label for="outcome_def" data-i18n="outcome_deferred">DEFERRED (स्थगिती)</label>
+                <input type="radio" name="screening_outcome" id="outcome_rej" value="REJECTED">
+                <label for="outcome_rej" data-i18n="outcome_rejected">REJECTED (अयोग्य)</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="deferral_reason">Deferral Reason</span></label>
+              <input type="text" id="deferral_reason" class="form-control" placeholder="If deferred/rejected">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="deferral_duration">Deferral Duration</span></label>
+              <input type="text" id="deferral_duration" class="form-control" placeholder="e.g. 3 Months / 1 Year">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(3)" data-i18n="btn_previous">← Previous</button>
+          <div>
+            <button type="button" class="btn btn-secondary" onclick="saveRecord(true)" data-i18n="btn_save_draft">Save Draft</button>
+            <button type="button" class="btn btn-primary" onclick="goToStep(5)" data-i18n="btn_next">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 5: BLOOD BAG DETAILS ==================== -->
+      <div class="form-step" id="step-5">
+        <div class="card">
+          <div class="card-title" data-i18n="step_5">5. Blood Donation & Blood Bag Details (रक्त संकलन तपशील)</div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label><span data-i18n="blood_bag_number">Blood Bag Barcode / Number</span> *</label>
+              <input type="text" id="blood_bag_number" class="form-control" required placeholder="e.g. BAG-2026-9901">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="bag_type">Type of Bag</span> *</label>
+              <select id="bag_type" class="form-control" required>
+                <option value="Single">Single Bag (350ml / 450ml)</option>
+                <option value="Double">Double Bag</option>
+                <option value="Triple">Triple Bag</option>
+                <option value="Quadruple">Quadruple Bag</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="anticoagulant">Anticoagulant Solution</span> *</label>
+              <select id="anticoagulant" class="form-control" required>
+                <option value="CPDA-1">CPDA-1</option>
+                <option value="SAGM">SAGM</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="volume_ml">Volume Collected (mL)</span> *</label>
+              <select id="volume_ml" class="form-control" required>
+                <option value="350">350 mL</option>
+                <option value="450">450 mL</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="bag_manufacturer">Bag Manufacturer (FK/DT/HLL/Maco/TP/JM)</span></label>
+              <select id="bag_manufacturer" class="form-control">
+                <option value="FK">FK</option>
+                <option value="DT">DT</option>
+                <option value="HLL">HLL</option>
+                <option value="Maco">Maco</option>
+                <option value="TP">TP</option>
+                <option value="JM">JM</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Batch No. (बॅच क्रमांक)</label>
+              <input type="text" id="batch_number" class="form-control" placeholder="e.g. BATCH-882">
+            </div>
+
+            <div class="form-group">
+              <label>Tubing / Segment No. (ट्युबिंग क्र.)</label>
+              <input type="text" id="segment_number" class="form-control" placeholder="e.g. TUB-990">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="counselor_name">Pre-donation Counseling Done By</span></label>
+              <input type="text" id="counselor_name" class="form-control" placeholder="Counselor Staff Name">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="collection_duration">Duration of Collection (mins)</span></label>
+              <input type="number" id="collection_duration" class="form-control" value="10" placeholder="10">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="phlebotomy_site">Phlebotomy Site</span> *</label>
+              <select id="phlebotomy_site" class="form-control" required>
+                <option value="Right Arm">Right Arm (उजवा हात)</option>
+                <option value="Left Arm">Left Arm (डावा हात)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="phlebotomist_staff_id">Phlebotomist Staff Name</span> *</label>
+              <input type="text" id="phlebotomist_staff_id" class="form-control" required placeholder="Staff Person Name">
+            </div>
+
+            <div class="form-group">
+              <label><span data-i18n="adverse_reaction">Adverse Donor Reaction</span> *</label>
+              <select id="adverse_reaction" class="form-control" required>
+                <option value="NONE">None (काही नाही)</option>
+                <option value="DIZZINESS">Dizziness (चक्कर)</option>
+                <option value="FAINTING">Fainting / Syncope (मूर्च्छा)</option>
+                <option value="HEMATOMA">Hematoma (सूज/रक्त जमणे)</option>
+                <option value="OTHER">Other (इतर)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(4)" data-i18n="btn_previous">← Previous</button>
+          <div>
+            <button type="button" class="btn btn-secondary" onclick="saveRecord(true)" data-i18n="btn_save_draft">Save Draft</button>
+            <button type="button" class="btn btn-primary" onclick="goToStep(6)" data-i18n="btn_next">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 6: CONSENT & SIGNATURE ==================== -->
+      <div class="form-step" id="step-6">
+        <div class="card">
+          <div class="card-title" data-i18n="consent_title">Donor Consent Form (मान्यतापत्र)</div>
+
+          <div style="font-size:0.92rem; line-height:1.6; background:#F8FAFC; padding:18px; border-radius:6px; border:1px solid #CBD5E1; margin-bottom:20px;">
+            <div style="font-weight:bold; font-size:1.05rem; color:#1E3A8A; margin-bottom:12px; border-bottom:1px solid #E2E8F0; padding-bottom:6px;" data-i18n="consent_header">Consent / मान्यतापत्र</div>
+            <p style="margin-bottom:12px;" data-i18n="consent_item1">1) I understand that...</p>
+            <p style="margin-bottom:12px;" data-i18n="consent_item2">2) I hereby give consent to utilize my...</p>
+            <p style="margin-bottom:12px;" data-i18n="consent_item3">3) I have read and understood all the information...</p>
+            <p style="margin-bottom:12px;" data-i18n="consent_item4">4) I prohibit any information about...</p>
+            
+            <!-- Question 5: Notification of Abnormal Test Result -->
+            <div style="margin-top:14px; padding:14px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:6px;">
+              <p style="margin-bottom:10px; font-weight:600; color:#1E3A8A;" data-i18n="consent_item5">5) I would like to be informed about any abnormal test result from above mentioned tests.</p>
+              <div style="display:flex; gap:24px; align-items:center;">
+                <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600; color:#0F172A;">
+                  <input type="radio" name="abnormal_results_notify_choice" id="notify_yes" value="Yes" checked onchange="document.getElementById('abnormal_results_notify').value='true'">
+                  <span data-i18n="consent_yes">Yes / होय</span>
+                </label>
+                <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600; color:#0F172A;">
+                  <input type="radio" name="abnormal_results_notify_choice" id="notify_no" value="No" onchange="document.getElementById('abnormal_results_notify').value='false'">
+                  <span data-i18n="consent_no">No / नाही</span>
+                </label>
+                <input type="hidden" id="abnormal_results_notify" value="true">
+              </div>
+            </div>
+
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid #E2E8F0;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:#0F172A;">
+                <input type="checkbox" id="consent_given" checked> 
+                <span data-i18n="consent_confirm_checkbox">I hereby agree and confirm all consent declarations.</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Donor Consent Signature Box -->
+          <div class="signature-box" style="margin-bottom:24px;">
+            <label style="display:block; margin-bottom:8px; font-weight:700; color:#1E3A8A;" data-i18n="consent_donor_sig_label">Donor Consent Signature (रक्तदात्याची स्वाक्षरी - Canvas)</label>
+            <canvas id="donorSignatureCanvas" style="height:150px; background:#FFFFFF; width:100%; touch-action:none; border:1px solid #CBD5E1; border-radius:6px; cursor:crosshair;"></canvas>
+            <div style="margin-top:8px;">
+              <button type="button" class="btn btn-secondary" style="padding:4px 12px; font-size:0.8rem;" onclick="clearDonorSignature()" data-i18n="btn_clear_donor_sig">Clear Donor Signature</button>
+            </div>
+          </div>
+
+          <div id="reviewSummaryContent"></div>
+
+          <div class="card-title" style="margin-top:24px;" data-i18n="mo_verification_title">Medical Officer Verification & Electronic Signature</div>
+
+          <div class="form-group" style="margin-bottom:16px;">
+            <label data-i18n="medical_notes">Clinical Remarks by Medical Officer</label>
+            <textarea id="medical_notes" class="form-control" rows="2" placeholder="Enter clinical notes or screening observations..."></textarea>
+          </div>
+
+          <!-- MO Signature Mode Selection -->
+          <div id="moSigOptions" style="margin-bottom:16px; padding:12px; background:#F1F5F9; border-radius:6px;">
+            <label style="font-weight:700; display:block; margin-bottom:8px;">Select Medical Officer Signature Method:</label>
+            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+              <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="mo_sig_choice" id="choice_stored" value="stored" onchange="toggleMoSigMode('stored')">
+                <span><strong>Use My Pre-stored Digital Signature</strong> (Uploaded in Profile)</span>
+              </label>
+              <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+                <input type="radio" name="mo_sig_choice" id="choice_draw" value="draw" checked onchange="toggleMoSigMode('draw')">
+                <span><strong>Draw / Touch New Signature on Canvas</strong></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Stored Signature Preview Container -->
+          <div id="storedSigContainer" class="hidden" style="margin-bottom:16px; text-align:center; padding:16px; background:#FFFFFF; border:2px dashed #059669; border-radius:6px;">
+            <p style="font-size:0.85rem; color:#059669; font-weight:bold; margin-bottom:8px;">✓ Using Pre-stored Digital Signature from Medical Officer Profile</p>
+            <div id="storedSigPreview"></div>
+          </div>
+
+          <!-- Canvas Draw Signature Box -->
+          <div class="signature-box" id="drawSigContainer">
+            <label style="display:block; margin-bottom:8px; font-weight:700;" data-i18n="mo_signature_label">Medical Officer Electronic Signature Pad (Finger / Stylus / Mouse)</label>
+            <canvas id="signatureCanvas"></canvas>
+            <div style="margin-top:8px;">
+              <button type="button" class="btn btn-secondary" style="padding:6px 14px; font-size:0.85rem;" onclick="clearSignature()" data-i18n="btn_clear">Clear Signature</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(5)" data-i18n="btn_previous">← Previous</button>
+          <div>
+            <button type="button" class="btn btn-secondary" onclick="saveRecord(true)" data-i18n="btn_save_draft">Save Draft</button>
+            <button type="button" class="btn btn-success" onclick="confirmAndFinaliseRecord()" data-i18n="btn_sign_finalise">Confirm & Finalise Record ✒️</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script src="/js/language.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/form.js"></script>
+  <script src="/js/signature.js"></script>
+</body>
+</html>

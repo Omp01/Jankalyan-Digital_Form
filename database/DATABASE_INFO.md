@@ -232,63 +232,43 @@ You can inspect and query all records in the database using any of the following
    python app.py
    ```
 2. Open your browser and navigate to:
-   - **Dashboard (All Donation Records):** `http://localhost:5000/dashboard.html`
-   - **User Management (Admin Only):** `http://localhost:5000/users.html`
-   - **Excel Export:** Go to Dashboard and click **"Export Excel"** or open `http://localhost:5000/api/export/excel` directly.
+   - **Dashboard (All Donation Records):** `http://localhost:8000/dashboard.html`
+   - **User Management (Admin Only):** `http://localhost:8000/users.html`
+   - **Excel Export:** Go to Dashboard and click **"Export Excel"** or open `http://localhost:8000/api/export/excel` directly.
    - **JSON API Endpoints:**
-     - All records: `GET http://localhost:5000/api/records`
-     - Audit logs: `GET http://localhost:5000/api/audit-logs`
-     - Users list: `GET http://localhost:5000/api/users`
+     - All records: `GET http://localhost:8000/api/records`
+     - Audit logs: `GET http://localhost:8000/api/audit-logs`
+     - Users list: `GET http://localhost:8000/api/users`
 
 ### Method 2: Via Python Script
 Run a Python snippet in your terminal or script:
 ```python
 import sqlite3
-
 conn = sqlite3.connect('database/bloodbank.db')
 conn.row_factory = sqlite3.Row
-cursor = conn.cursor()
 
-# Query all records joined with donor details
-cursor.execute('''
-    SELECT r.id, r.record_number, r.donation_date, r.status, d.full_name, d.mobile_number, d.blood_group_known
-    FROM blood_donation_records r
-    LEFT JOIN donor_details d ON r.id = d.record_id
-''')
-
-for row in cursor.fetchall():
-    print(dict(row))
-
-conn.close()
+# View all records
+records = conn.execute("SELECT * FROM blood_donation_records").fetchall()
+for r in records:
+    print(dict(r))
 ```
 
 ### Method 3: Via SQLite Command Line Interface (CLI)
-Open a terminal in the project directory:
+If SQLite CLI is installed:
 ```bash
 sqlite3 database/bloodbank.db
 ```
-Then execute SQL commands:
+Inside the CLI:
 ```sql
-.headers on
-.mode column
-
--- View total row count for all tables
-SELECT 'users', COUNT(*) FROM users
-UNION ALL SELECT 'blood_donation_records', COUNT(*) FROM blood_donation_records
-UNION ALL SELECT 'donor_details', COUNT(*) FROM donor_details
-UNION ALL SELECT 'audit_logs', COUNT(*) FROM audit_logs;
-
--- Select all records
-SELECT * FROM blood_donation_records;
-
--- Exit SQLite CLI
-.exit
+.tables
+SELECT id, record_number, status, created_at FROM blood_donation_records;
+.quit
 ```
 
 ### Method 4: Via GUI Tools (e.g. DB Browser for SQLite)
 1. Download & Install [DB Browser for SQLite](https://sqlitebrowser.org/).
 2. Click **Open Database** and select `d:\Jankalyaan_Digitalized_Form\database\bloodbank.db`.
-3. Use the **Browse Data** tab to view, search, and filter records in any table.
+3. Use the **Browse Data** tab to view, filter, and inspect any of the 12 tables.
 
 ---
 
@@ -299,4 +279,4 @@ SELECT * FROM blood_donation_records;
   python database/db_init.py
   ```
 - **Backup Database via API:**
-  Navigate to Admin panel or fetch `GET http://localhost:5000/api/backup/download`.
+  Navigate to Admin panel or fetch `GET http://localhost:8000/api/backup/download`.

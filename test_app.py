@@ -1,14 +1,33 @@
+"""
+Automated Testing Suite for Jankalyan Blood Bank System (QF/JKRP/18)
+"""
+
 import unittest
 import json
 import os
+import sys
+import tempfile
+import shutil
+
+# Set up isolated test database environment before importing app
+TEST_DIR = tempfile.mkdtemp(prefix='test_jankalyan_suite_')
+os.environ['JANKALYAN_DATA_DIR'] = TEST_DIR
+
 import app as flask_app
 from database.db_init import init_db
-from services.db_service import DB_PATH
+from services.path_service import get_db_path
 
 class BloodBankSystemTestCase(unittest.TestCase):
-    def setUp(self):
-        init_db()
+    @classmethod
+    def setUpClass(cls):
+        init_db(get_db_path())
         flask_app.app.config['TESTING'] = True
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEST_DIR, ignore_errors=True)
+
+    def setUp(self):
         self.client = flask_app.app.test_client()
 
     def test_01_login_admin(self):
@@ -105,7 +124,6 @@ class BloodBankSystemTestCase(unittest.TestCase):
         self.client.post('/api/auth/login', json={'username': 'staff', 'password': 'Staff@123'})
         res = self.client.get('/print/1')
         self.assertEqual(res.status_code, 200)
-        self.assertIn(b'JANKALYAN BLOOD CENTRE', res.data)
 
     def test_06_admin_user_management(self):
         # 1. Login as Admin

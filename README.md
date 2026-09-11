@@ -69,7 +69,7 @@ A lightweight, secure, tablet-friendly internal Blood Bank Digital Form System b
    ```
 
 5. **Access Application:**
-   Open browser at `http://localhost:5000` (or `http://<hospital-server-ip>:5000` on hospital LAN).
+   Open browser at `http://localhost:8000` (or `http://<hospital-server-ip>:8000` on hospital LAN).
 
 ---
 
@@ -96,3 +96,15 @@ To execute tests:
 ```bash
 python test_app.py
 ```
+
+---
+
+## Standalone Desktop (.EXE) & Inno Setup Packaging
+
+To package the application into a standalone Windows installer:
+1. Build the standalone executable with PyInstaller:
+   ```bash
+   python build_exe.py
+   ```
+2. Compile the Inno Setup script [`inno_setup.iss`](inno_setup.iss) using Inno Setup Compiler.
+3. For full details and SQLite persistent storage architecture, see [`PACKAGING_GUIDE.md`](PACKAGING_GUIDE.md).

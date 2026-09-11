@@ -27,7 +27,7 @@ To guarantee 100% data sovereignty, complete privacy, and zero data leakage to 3
 
 | Port / Address | Protocol / Service | Purpose & Access Scope |
 | :--- | :--- | :--- |
-| **Port 5000** | HTTP (TCP) | Flask / Waitress WSGI Application Server (Internal LAN Access) |
+| **Port 8000** | HTTP (TCP) | Flask / Waitress WSGI Application Server (Internal LAN Access) |
 | **Port 80** | HTTP (TCP) | Web Reverse Proxy (Nginx / IIS) - Redirects traffic to HTTPS |
 | **Port 443** | HTTPS (TCP / SSL) | Encrypted Web Access (Mandatory for Donor Digital Signatures) |
 | **Static Internal IP** | LAN Address (e.g., `192.168.1.100`) | Assigned via DHCP MAC Reservation on Hospital Router |

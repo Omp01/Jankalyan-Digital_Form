@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audit Logs & Backup - Jankalyan Blood Bank Digital Form System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/form.css">
+</head>
+<body>
+  <div class="app-container">
+    <header id="appHeader"></header>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">
+        <span>💾 SQLite Database Backup & Restore</span>
+      </div>
+      <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:12px;">
+        As an authorized administrator, you can download a full backup of the <code>bloodbank.db</code> database or restore a previously downloaded database file.
+      </p>
+
+      <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+        <a href="/api/backup/download" class="btn btn-primary">⬇️ Download Database Backup (bloodbank.db)</a>
+
+        <form id="restoreForm" style="display:flex; gap:8px; align-items:center;" onsubmit="handleRestore(event)">
+          <input type="file" id="backupFile" accept=".db" required class="form-control" style="max-width:250px;">
+          <button type="submit" class="btn btn-secondary">⬆️ Restore Database</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>📋 System Audit Logs</span>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="table-questionnaire">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Username</th>
+              <th>Action</th>
+              <th>Record No</th>
+              <th>Details</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody id="auditTableBody">
+            <tr><td colspan="6" class="text-center">Loading audit logs...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/language.js"></script>
+  <script src="/js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkAuth();
+      if (currentUser.role !== 'ADMIN') {
+        alert('Access denied. Admin role required.');
+        window.location.href = '/dashboard.html';
+        return;
+      }
+      loadAuditLogs();
+    });
+
+    async function loadAuditLogs() {
+      try {
+        const res = await fetch('/api/audit-logs');
+        const data = await res.json();
+        if (data.success) {
+          const tbody = document.getElementById('auditTableBody');
+          tbody.innerHTML = data.logs.map(l => `
+            <tr>
+              <td>${formatDate(l.timestamp)}</td>
+              <td><strong>${l.username}</strong></td>
+              <td><span class="badge badge-submitted">${l.action}</span></td>
+              <td>${l.record_number || '-'}</td>
+              <td>${l.details || '-'}</td>
+              <td>${l.ip_address || '-'}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleRestore(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('backupFile');
+      if (!fileInput.files.length) return;
+
+      if (!confirm("WARNING: Restoring a database file will overwrite all current data. Are you sure you want to proceed?")) return;
+
+      const formData = new FormData();
+      formData.append('backup_file', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/backup/restore', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          loadAuditLogs();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        showToast('Failed to restore database', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

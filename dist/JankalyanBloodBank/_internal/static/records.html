@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Records - Jankalyan Blood Bank Digital Form System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/form.css">
+  <style>
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 600px) {
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header id="appHeader"></header>
+
+    <div class="card">
+      <div class="card-title">
+        <span>🔍 Search & Retrieve Donor Records (रक्तदाता नोंदी शोध)</span>
+        <button class="btn btn-success" style="font-size:0.85rem; margin-left:auto;" onclick="exportToExcel()" data-i18n="btn_export_excel">Export to Excel 📊</button>
+      </div>
+
+      <div class="filter-grid">
+        <div class="form-group">
+          <label>Search Query</label>
+          <input type="text" id="searchQuery" class="form-control" placeholder="Record No, Name, Mobile, Bag No" oninput="loadRecords()">
+        </div>
+
+        <div class="form-group">
+          <label>Blood Group</label>
+          <select id="filterBloodGroup" class="form-control" onchange="loadRecords()">
+            <option value="">All Groups</option>
+            <option value="A+">A +ve</option>
+            <option value="A-">A -ve</option>
+            <option value="B+">B +ve</option>
+            <option value="B-">B -ve</option>
+            <option value="AB+">AB +ve</option>
+            <option value="AB-">AB -ve</option>
+            <option value="O+">O +ve</option>
+            <option value="O-">O -ve</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select id="filterStatus" class="form-control" onchange="loadRecords()">
+            <option value="">All Statuses</option>
+            <option value="DRAFT">DRAFT</option>
+            <option value="SUBMITTED">SUBMITTED</option>
+            <option value="MEDICAL_VERIFICATION">MEDICAL_VERIFICATION</option>
+            <option value="SIGNED">SIGNED</option>
+            <option value="COMPLETED">COMPLETED</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>From Date</label>
+          <input type="date" id="filterFromDate" class="form-control" onchange="loadRecords()">
+        </div>
+
+        <div class="form-group">
+          <label>To Date</label>
+          <input type="date" id="filterToDate" class="form-control" onchange="loadRecords()">
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="table-questionnaire" id="recordsTable">
+          <thead>
+            <tr>
+              <th>Record Number</th>
+              <th>Date</th>
+              <th>Donor Name & Contact</th>
+              <th>Blood Group</th>
+              <th>Blood Bag No</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTableBody">
+            <tr><td colspan="7" class="text-center">Loading records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/language.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/records.js"></script>
+</body>
+</html>

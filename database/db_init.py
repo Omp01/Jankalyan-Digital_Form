@@ -1,17 +1,35 @@
 import os
+import sys
 import sqlite3
 from werkzeug.security import generate_password_hash
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'bloodbank.db')
-SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
+# Ensure project root is in sys.path when running db_init.py directly
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
-def init_db():
-    print(f"Initializing SQLite database at: {DB_PATH}")
-    conn = sqlite3.connect(DB_PATH)
+from services.path_service import get_db_path, get_resource_path
+
+def get_schema_path():
+    # Look for schema.sql in resource path or local folder
+    res_path = get_resource_path(os.path.join('database', 'schema.sql'))
+    if os.path.exists(res_path):
+        return res_path
+    local_path = os.path.join(current_dir, 'schema.sql')
+    return local_path
+
+def init_db(target_db_path=None):
+    db_path = target_db_path or get_db_path()
+    schema_path = get_schema_path()
+    
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    print(f"Initializing SQLite database at: {db_path}")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # Read and execute schema
-    with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
+    with open(schema_path, 'r', encoding='utf-8') as f:
         schema_sql = f.read()
     cursor.executescript(schema_sql)
 
