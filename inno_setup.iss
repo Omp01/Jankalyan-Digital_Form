@@ -1,41 +1,43 @@
 ; ==============================================================================
 ; Inno Setup Script for Jankalyan Blood Bank Digital System (QF/JKRP/18)
 ; ==============================================================================
-; Requires: Inno Setup 6.x (https://jrsoftware.org/isdl.php)
-; 
-; Instructions:
-; 1. First, build the executable package using:
-;    python build_exe.py
-; 2. Open this file (inno_setup.iss) in Inno Setup Compiler and click "Compile" (or press Ctrl+F9).
-;    Or run from command line:
+; Version: 1.1.0 (Wi-Fi LAN Multi-Device Access & Automated Firewall Support)
+; Requires: Inno Setup 6.x (Download free from: https://jrsoftware.org/isdl.php)
+;
+; Build Steps:
+; 1. Build PyInstaller standalone folder:
+;    python build_exe.py   (or run build.bat)
+; 2. Open this script in Inno Setup Compiler and click Compile (Ctrl+F9), or run:
 ;    iscc inno_setup.iss
 ; ==============================================================================
 
 #define MyAppName "Jankalyan Blood Bank Digital System"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Jankalyan Blood Centre & Hospital"
 #define MyAppExeName "JankalyanBloodBank.exe"
-#define MyAppAssocName MyAppName + " File"
-#define MyAppAssocExt ".db"
+#define MyAppURL "http://127.0.0.1:8000"
 
 [Setup]
-; App Identity
+; Unique Application Identifier (GUID)
 AppId={{C8E29910-3492-41FA-83DF-8F32C0D41BA2}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\Jankalyan Blood Bank
 DefaultGroupName=Jankalyan Blood Bank
 AllowNoIcons=yes
 OutputDir=dist_installer
-OutputBaseFilename=JankalyanBloodBank_Setup_v1.0
+OutputBaseFilename=JankalyanBloodBank_Setup_v1.1.0
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
-PrivilegesRequired=lowest
+PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 
-; Visual Branding
+; Branding & Wizard Behavior
 DisableProgramGroupPage=auto
 DisableReadyPage=no
 
@@ -43,35 +45,43 @@ DisableReadyPage=no
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "quicklaunchicon"; Description: "Create a Quick Launch shortcut"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+Name: "firewallrule"; Description: "Configure Windows Firewall rule for Wi-Fi / LAN multi-device access (Port 8000)"; GroupDescription: "Network Options:"; Flags: checkedonce
 
 [Files]
-; All files compiled by PyInstaller into dist\JankalyanBloodBank
+; Include all PyInstaller bundled dependencies from dist\JankalyanBloodBank
 Source: "dist\JankalyanBloodBank\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 ; Start Menu Shortcuts
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Comment: "Launch Jankalyan Blood Bank Digital System"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Comment: "Launch Jankalyan Blood Bank Digital System (Port 8000 - Wi-Fi / LAN Enabled)"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
 ; Desktop Shortcut
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; Comment: "Launch Jankalyan Blood Bank Digital System"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; Comment: "Launch Jankalyan Blood Bank Digital System (Port 8000 - Wi-Fi / LAN Enabled)"
 
 [Run]
-; Option to launch the application immediately after setup finishes
+; 1. Add Windows Firewall Inbound Rule for Port 8000 (Allows tablets/other PCs on Wi-Fi to access server)
+Filename: "netsh.exe"; Parameters: "advfirewall firewall add rule name=""Jankalyan Blood Bank Server (Port 8000)"" dir=in action=allow protocol=TCP localport=8000 profile=any"; Tasks: firewallrule; Flags: runhidden; StatusMsg: "Configuring Windows Firewall for Wi-Fi network access..."
+
+; 2. Launch application post-installation
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
+[UninstallRun]
+; Remove Windows Firewall Rule on uninstallation
+Filename: "netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Jankalyan Blood Bank Server (Port 8000)"""; Flags: runhidden
+
 [UninstallDelete]
-; Note: User data is stored in %APPDATA%\JankalyanBloodBank and is intentionally preserved on uninstall.
+; Clean up runtime logs in application directory
 Type: files; Name: "{app}\*.log"
 
 [Code]
-// Helper message indicating user data preservation
+// Note: User SQLite database and audit logs stored in %APPDATA%\JankalyanBloodBank\data\
+// are permanently preserved across setup upgrades and uninstallations.
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usPostUninstall then
   begin
-    // User database is preserved in %APPDATA%\JankalyanBloodBank\data\
+    // Database safely preserved in %APPDATA%\JankalyanBloodBank\data\
   end;
 end;

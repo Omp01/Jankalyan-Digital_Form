@@ -37,7 +37,9 @@ scratch/
 *.swo
 .DS_Store
 Thumbs.db
-
 # Antigravity IDE Internal Directories
 .gemini/
 .agents/
+
+# Inno Setup Installer Output (Executables exceed GitHub 100MB limit)
+dist_installer/
