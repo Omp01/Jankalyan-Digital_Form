@@ -71,8 +71,9 @@ dist\JankalyanBloodBank\
 ### Step 3: Test the Executable Locally
 Double-click `dist\JankalyanBloodBank\JankalyanBloodBank.exe`.
 - The application will verify/initialize `%APPDATA%\JankalyanBloodBank\data\bloodbank.db`.
-- Waitress server will start on `http://127.0.0.1:8000`.
-- Your default web browser will automatically open to the login screen.
+- Waitress server will start listening on `0.0.0.0:8000` (all network interfaces).
+- The launcher console will display local (`http://127.0.0.1:8000`) and Wi-Fi / LAN network access URLs (e.g. `http://192.168.x.x:8000`) for tablets and other desktop PCs.
+- Your default web browser will automatically open to the login screen on the host PC.
 
 ---
 
